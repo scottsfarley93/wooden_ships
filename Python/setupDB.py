@@ -1,10 +1,10 @@
 # __author__ = 'scottsfarley'
 import psycopg2
 import csv
-f = open("../data/database3.csv", 'rU')
-connectString = "dbname='" + str("WoodenShips") + "' user='" + str("postgres") + "' host='" + str("localhost") + "' password='" + str("G0Bears7!") + "'"
-conn = psycopg2.connect(connectString)
-reader = csv.reader(f)
+#f = open("../data/database3.csv", 'rU')
+#connectString = "dbname='" + str("WoodenShips") + "' user='" + str("postgres") + "' host='" + str("localhost") + "' password='" + str("G0Bears7!") + "'"
+#conn = psycopg2.connect(connectString)
+#reader = csv.reader(f)
 # # fields =  reader.fieldnames
 createSQL = "CREATE TABLE IF NOT EXISTS Logbook (RecID int, " \
             "InstAbbr text, " \
@@ -87,6 +87,9 @@ createSQL = "CREATE TABLE IF NOT EXISTS Logbook (RecID int, " \
             "Illustrations boolean, " \
             "OtherRem text," \
             "Point point );"
+
+print createSQL
+exit()
 
 cursor = conn.cursor()
 cursor.execute(createSQL)

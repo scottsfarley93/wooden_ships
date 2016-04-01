@@ -12,7 +12,7 @@
 globals = {} 
 globals.map = {}
 globals.loaded = 0
-globals.filesRequired = 6
+globals.filesRequired = 5;
 globals.data ={}
 globals.filter = {}
 globals.shipnames = [];
@@ -65,7 +65,7 @@ function getGeojson(){
 
 function getCities(){
 	//get cities located in the geocode table
-	$.ajax("http://localhost:8080/api/places", {
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/geocodedPlaces.php", {
 		success: function(response){
 			console.log(response)
 			addCitiesToMap(response['data'])
@@ -295,13 +295,12 @@ function onSubmit(){
 	console.log("Filter is ")
 	console.log(globals.filter)
 	loadShips(filter);
-	loadShips(filter, 'tracks')
 }
 
 //load the UI components from the database
 function loadUI(){
 	//load the nationalities selection
-	$.ajax("http://localhost:8080/api/nations", {
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/nations.php", {
 		success: function(response){
 			data = response['data']
 			for (var i=0; i< data.length; i++){
@@ -321,17 +320,20 @@ function loadUI(){
 		beforeSend: function(){
 			console.log(this.url);
 		},
-		dataType: "jsonp"
+		dataType: "jsonp",
+		type: "GET"
 	})
 	//load the ship names
-	$.ajax("assets/data/ships.json", {
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/Ships.php", {
 		success: function(response){
 			data = response['data']
 			for (var i=0; i < data.length; i++){
 				$("#shipNameSelect").append("<option>" + data[i]['ShipName'] + "</option>")
+				$("#shipTypeSelect").append("<option>" + data[i]['ShipType'] + "</option>")
 				globals.shipnames.push(data[i]['ShipName'])
 			}
 			$("#shipsLoaded").text("Done.")
+			$("#shipTypesLoaded").text("Done.")
 			//establish the color scale
 			globals.shipColorScale.domain(globals.shipnames)
 			globals.loaded +=1
@@ -346,10 +348,10 @@ function loadUI(){
 		beforeSend: function(){
 			console.log(this.url)
 		},
-		dataType: "json"
+		dataType: "jsonp"
 	})
 	//load the company names
-	$.ajax("assets/data/companies.json",{
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/Companies.php",{
 		success: function(response){
 			data = response['data']
 			for (var i=0; i < data.length; i++){
@@ -370,32 +372,10 @@ function loadUI(){
 		beforeSend: function(){
 			console.log(this.url)
 		},
-		dataType: "json"
-	})
-		//load the ship types
-	$.ajax("http://localhost:8080/api/shiptypes",{
-		success: function(response){
-			data = response['data']
-			for (var i=0; i < data.length; i++){
-				$("#shipTypeSelect").append("<option>" + data[i]['type'] + "</option>")
-			}
-			$("#companiesLoaded").text("Done.")
-			globals.loaded +=1
-			if (globals.loaded == globals.filesRequired){
-				interfaceReady()
-			}
-		},
-		error: function(xhr, status, error){
-			console.log(error);
-			$("#typesLoaded").text("Failed.")
-		},
-		beforeSend: function(){
-			console.log(this.url)
-		},
 		dataType: "jsonp"
 	})
 	//load voyage start locations
-		$.ajax("http://localhost:8080/api/voyagestarts", {
+		$.ajax("http://grad.geography.wisc.edu/sfarley2/voyageStarts.php", {
 		success: function(response){
 			data = response['data']
 			for (var i=0; i< data.length; i++){
@@ -419,7 +399,7 @@ function loadUI(){
 	})
 	
 	//load voyage end locations
-		$.ajax("http://localhost:8080/api/voyageends", {
+		$.ajax("http://grad.geography.wisc.edu/sfarley2/voyageEnds.php", {
 		success: function(response){
 			data = response['data']
 			for (var i=0; i< data.length; i++){
@@ -487,8 +467,7 @@ function clearMap(){
 function loadShips(filter, type){
 	//load the data from the database server with the given parameters
 	//type is either points or tracks
-	if (type != 'tracks'){
-			$.ajax("http://localhost:8080/api/data?callback=?", {
+			$.ajax("http://grad.geography.wisc.edu/sfarley2/data.php?callback=?", {
 			success: function(response){
 				console.log("Got response from database server.")
 				$("#status").text("Parsing response")
@@ -512,35 +491,6 @@ function loadShips(filter, type){
 			cache: true,
 			dataType: "jsonp",
 		})
-	}else {
-			$.ajax("http://localhost:8080/api/tracks?callback=?", {
-			success: function(response){
-				console.log("Got response from database server.")
-				$("#status").text("Parsing response")
-				console.log(response)
-				for (item in response.data){
-					plotLinestring(response.data[item].Track)
-				}
-				
-			},
-			error: function(xhr, status, error){
-				console.log(error);
-				$("#status").text("Failed to get ships.")
-				
-			},
-			beforeSend: function(){
-				console.log(this.url);
-				$("#status").text("Requesting data from server.")
-			},
-			data: filter,
-			crossDomain: true,
-			type: "POST",
-			cache: true,
-			dataType: "jsonp",
-		})
-	}
-
-	
 }
 
 function addPointsToMap(json){
@@ -598,7 +548,7 @@ function addPointsToMap(json){
 	  	//opens the json response in a new browser tab
 	  	//could be more fancy easily
 	  	recordid = d.recid
-	  	url = "http://localhost:8080/api/details/" + recordid
+	  	url = "http://grad.geography.wisc.edu/sfarley2/Details.php?" + recordid
 	  	console.log("Opening: " + url)
 	  	window.open(url, "_blank")
 	  })
@@ -762,44 +712,44 @@ function downloadCSV(){
 	window.open(encodedUri);
 }
 
-function fixLinestring(linestring){
-	//linestring is the track object from tracks api
-	linestring = linestring.replace("LINESTRING", "")
-	linestring = linestring.replace("(", "[")
-	linestring = linestring.replace(")", "]")
-	linestring = linestring.split(",")
-	linestring = _.map(linestring, function(value, key, list){
-		v = value.split(" ")
-		lat = +v[1]
-		lng = +v[0]
-		if ((lat) && (lng)){
-			return {'lon3' : +v[0], "lat3": +v[1]}
-		}else{
-			return {'lon3': NaN, 'lat3': NaN}
-		}
-	})
-	return linestring
-}
+// function fixLinestring(linestring){
+	// //linestring is the track object from tracks api
+	// linestring = linestring.replace("LINESTRING", "")
+	// linestring = linestring.replace("(", "[")
+	// linestring = linestring.replace(")", "]")
+	// linestring = linestring.split(",")
+	// linestring = _.map(linestring, function(value, key, list){
+		// v = value.split(" ")
+		// lat = +v[1]
+		// lng = +v[0]
+		// if ((lat) && (lng)){
+			// return {'lon3' : +v[0], "lat3": +v[1]}
+		// }else{
+			// return {'lon3': NaN, 'lat3': NaN}
+		// }
+	// })
+	// return linestring
+// }
 
-function plotLinestring(linestring){
-	console.log("Plotting linestring")
-	linestring = fixLinestring(linestring)
-	console.log(linestring)
-	var valueline = d3.svg.line()
-	    .x(function(d) { 
-	    	console.log(d)
-	    	console.log(globals.map.projection([+d.lon3]));
-	    	return globals.map.projection([+d.lon3])[0]; })
-	    .y(function(d) { return globals.map.projection([+d.lat3])[1]; });
-    
-    	globals.map.map.selectAll("path")
-			.data(linestring).enter()
-			.append('path')
-			.attr('class', 'track')
-			.attr('d', valueline)
-			.attr('stroke', 'red')
-			.attr('stroke-weight', 1)
-// 		
+// function plotLinestring(linestring){
+	// console.log("Plotting linestring")
+	// linestring = fixLinestring(linestring)
+	// console.log(linestring)
+	// var valueline = d3.svg.line()
+	    // .x(function(d) { 
+	    	// console.log(d)
+	    	// console.log(globals.map.projection([+d.lon3]));
+	    	// return globals.map.projection([+d.lon3])[0]; })
+	    // .y(function(d) { return globals.map.projection([+d.lat3])[1]; });
+//     
+    	// globals.map.map.selectAll("path")
+			// .data(linestring).enter()
+			// .append('path')
+			// .attr('class', 'track')
+			// .attr('d', valueline)
+			// .attr('stroke', 'red')
+			// .attr('stroke-weight', 1)
+// // 		
 // 
 // 		
 	// //tooltip on hover	
@@ -819,7 +769,7 @@ function plotLinestring(linestring){
 	  // })
 // 	  
 	  // globals.map.map.call(globals.map.tip)//enable the tooltip
-}
+//}
 
 $("#downloadCSV").click(downloadCSV)
 
