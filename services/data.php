@@ -12,74 +12,45 @@ if (!$db_connection){
 	die("Could not connect to database: ".pg_errormessage($db_connection));
 }else{
 }
-//all requests are GET requests -- > don't try to use POST 
-// 
-// header=False, logbookLanguage = "", voyageFrom = "", voyageTo = "", shipName = "", shipType = "", company = "", nationality = "",
-            // name1= "", year = "", month = "", day = "", lat = "", lng = "", obsGen = False, cargo = False, biology=False,
-            // warsAndFights=False, otherObs=False, illustrations=False, shipsAndRig=False, lifeOnBoard=False,
-            // anchored = False, windDirection = "", windForce="", weather="", shapeClouds= "", dirClouds="", clearness="",
-            // precipitationDescriptor="", gusts=False, rain=False, fog=False, snow=False, thunder=False, hail=False, seaice=False,
-            // minYear="", maxYear="", minMonth="", maxMonth="", minDay="", maxDay="", latN="", latS = "", lngE="", lngW="", weatherCodeNotNull=False,
-            // fieldlist="", callback="", windSpeedMax = "", windDirMax = "",windSpeedMin="", windDirMin = "", join=False, *args, **kwargs):
+
+            // weatherID serial PRIMARY KEY,
+            // locationID integer references locations (locationID),
+            // airtemp double precision,
+            // pressure double precision,
+            // sst double precision,
+            // winddirection double precision,
+            // windforce double precision,
+            // pumpwater double precision,
+            // gusts boolean,
+            // rain boolean,
+            // fog boolean,
+            // snow boolean,
+            // thunder boolean,
+            // hail boolean,
+            // seaice boolean
 
 
-$sql = "SET statement_timeout TO 100000000;";
-$result = pg_query($sql);
-
-$colnames = array('recid', 'instabbr', 'logbooklanguage', 'voyagefrom', 'voyageto', 'shipname', 'shiptype', 'company', 'othershipinformation', 'nationality', 'name1', 'rank1', 'name2', 'rank2', 'zeromeridian', 'obsgen', 'distunits', 'disttolandmarkunits', 'disttravelledunits', 'longitudeunits', 'voyageini', 'unitsofmeasurement', 'year', 'month', 'day', 'date', 'distance', 'lat3', 'lon3', 'anchored', 'anchorplace', 'winddirection', 'allwinddirections', 'windforce', 'windforcescale', 'allwindforces', 'windscale', 'weather', 'shapeclouds', 'dirclouds', 'clearness', 'precipitationdescriptor', 'cloudfrac', 'gusts', 'rain', 'fog', 'snow', 'thunder', 'hail', 'seaice', 'sstreading', 'sstreadingunits', 'statesea', 'currentdir', 'currentspeed', 'tairreading', 'airthermreadingunits', 'probtair', 'baroreading', 'airpressurereadingunits', 'barometertype', 'bartempreading', 'bartempreadingunits', 'humreading', 'humidityunits', 'humiditymethod', 'pumpwater', 'wateratthepumpunits', 'lifeonboard', 'lifeonboardmemo', 'cargo', 'cargomemo', 'shipandrig', 'shipandrigmemo', 'biology', 'biologymemo', 'warsandfights', 'warsandfightsmemo', 'illustrations', 'otherrem', 'point', 'fromgeocode', 'togeocode');
-$joinedColnames = array('recid', 'instabbr', 'logbooklanguage', 'voyagefrom', 'voyageto', 'shipname', 'shiptype', 'company', 'othershipinformation', 'nationality', 'name1', 'rank1', 'name2', 'rank2', 'zeromeridian', 'obsgen', 'distunits', 'disttolandmarkunits', 'disttravelledunits', 'longitudeunits', 'voyageini', 'unitsofmeasurement', 'year', 'month', 'day', 'date', 'distance', 'lat3', 'lon3', 'anchored', 'anchorplace', 'winddirection', 'allwinddirections', 'windforce', 'windforcescale', 'allwindforces', 'windscale', 'weather', 'shapeclouds', 'dirclouds', 'clearness', 'precipitationdescriptor', 'cloudfrac', 'gusts', 'rain', 'fog', 'snow', 'thunder', 'hail', 'seaice', 'sstreading', 'sstreadingunits', 'statesea', 'currentdir', 'currentspeed', 'tairreading', 'airthermreadingunits', 'probtair', 'baroreading', 'airpressurereadingunits', 'barometertype', 'bartempreading', 'bartempreadingunits', 'humreading', 'humidityunits', 'humiditymethod', 'pumpwater', 'wateratthepumpunits', 'lifeonboard', 'lifeonboardmemo', 'cargo', 'cargomemo', 'shipandrig', 'shipandrigmemo', 'biology', 'biologymemo', 'warsandfights', 'warsandfightsmemo', 'illustrations', 'otherrem', 'point', 'fromgeocode', 'togeocode', 'windForceID', 'windForceDesc', 'windForceClass', 'windForceBeaufort', 'windSpeed', 'windForceLanguage', 'windDirectionID', 'windDirectionDesc', 'windDir', 'windDirectionLanguage');
-            
-//start building the sql
-$sql = "SELECT ";
-
-//which fields should we return?
-if (isset($_GET['fieldnames'])){
-	if ($_GET['fieldnames'] != ""){
-			$sql .= $_GET['fieldnames'];
-	}
-}else{
-	$sql .= " * ";
-}
-
-$sql .= " FROM logs "; //logs is the correct table --> logbook is depreciated
-
-
-
-//should we join to the wind force and direction tables? probably...
-if(isset($_GET['join'])){
-	if (($_GET['join'] == 'true')){
-		$sql .= " INNER JOIN windforces ON logs.windforce = windforces.nldesc ";
-  		$sql .= " INNER JOIN winddirections ON logs.winddirection = winddirections.nldesc ";  
-		//make sure the rest of the columns are returned on the result
-		$colnames = $joinedColnames;
-	}
-}
+$sql = "SELECT voyages.voyageid, locations.locationid, captains.captainName, nations.nationality, companies.companyName, ships.shipname, ships.shipType, voyages.fromPlace, voyages.toPlace,";
+$sql .= " voyages.startdate, locations.locationid, locations.longitude, locations.date, weather.airtemp, weather.pressure, weather.sst, weather.winddirection,";
+$sql .= " weather.windforce, weather.gusts, weather.fog, weather.rain, weather.snow, weather.thunder, weather.hail, weather.seaice from ";
+$sql .= " weather ";
+$sql .= " INNER JOIN locations on locations.locationid=weather.locationid ";
+$sql .= " INNER JOIN voyages on voyages.voyageid = locations.voyageid ";
+$sql .= " INNER JOIN captains on captains.captainid = voyages.captainid ";
+$sql .= " INNER JOIN nations on nations.nationid = voyages.nationid ";
+$sql .= " INNER JOIN ships on ships.shipid = voyages.shipid ";
+$sql .= " INNER JOIN companies on companies.companyid = voyages.companyid ";
+//$sql .= " group by voyages.voyageid, captains.captainid ";
 $sql .= " WHERE ";
 
+	 
+$voyageColnames = array("voyageID", "captainName", "nationality", "companyName", "shipName", "shipType", "voyageFromPlace", "voyageToPlace", "voyageStartDate");
+$pointColnames = array("locationID", "latitude", "longitude", "date");
+$weatherColnames = array("airTemp", "airPressure", "seaSurfaceTemp", "windDirection", "windSpeed", "gusts", "fog", "rain", "snow", "thunder", "hail", "seaice");
+$obsColnames = array("observationID", "memoType", "memoText", "memoLanguage");	
+$colnames = array("voyageID", "locationID", "captainName", "nationality", "companyName", "shipName", "shipType", 'fromPlace', "toPlace", "startDate", "longitude", "latitude",
+	"date", "airTemp", "airPressure", "sst", "windDirection", "windSpeed", "gusts", "fog", "rain", "snow", "thunder", "hail", "seaIce");
 
-
-// //what language is the logbook written in?
-if (isset($_GET['logbookLanguage'])){
-	$lang = $_GET['logbookLanguage'];
-	if ($lang!=""){
-	$sql .= "logbooklanguage = '" . $lang . "' AND ";		
-	}
-}
-
-//where the ship was sailing towards
-if (isset($_GET['voyageTo'])){
-	$voyageTo = $_GET['voyageTo'];
-	if ($voyageTo != ""){
-	$sql .= " geocodeto='" . $voyageTo ."' AND ";		
-	}
-}
-//where the ship was sailing from
-if (isset($_GET['voyageFrom'])){
-	$voyageFrom = $_GET['voyageFrom'];
-	if ($voyageFrom != ""){
-		$sql .= " geocodefrom='" . $voyageFrom ."' AND ";
-	}
-}
 //what was the ships name?
 if (isset($_GET['shipName'])){
 	$shipname = $_GET['shipName'];
@@ -104,132 +75,30 @@ if(isset($_GET['nationality'])){
 	if ($_GET['nationality'] != ""){$sql .= " nationality='" . $_GET['nationality'] . "' AND ";}
 }
 //name of captain/first officer
-if (isset($_GET['name1'])){
-	if($_GET['name1'] != ""){$sql .= " name1='" . $_GET['name1'] . "' AND ";}
-}
-//year of voyage
-if(isset($_GET['year'])){
-	if($_GET['year'] != ""){$sql .= " year=" . $_get['year'] . " AND ";}
+if (isset($_GET['captainName'])){
+	if($_GET['captainName'] != ""){$sql .= " captainName='" . $_GET['captainName'] . "' AND ";}
 }
 
-//month of voyage
-if(isset($_GET['month'])){
-	if($_GET['month'] != ""){$sql = " month=" . $_GET['month'] . " AND ";}
-}
-//day of voyage --> kind of useless but why not add it anyways
-if(isset($_GET['day'])){
-	if($_GET['day'] != ""){$sql = " day=" . $_GET['day'] . " AND ";}
-}
-//exact position
-if(isset($_GET['lat'])){
-	if($_GET['lat'] != ""){
-		$sql .= " lat3=" . $_GET['lat'] . " AND ";
+//airTemp
+if(isset($_GET['minAirTemp'])){
+	if($_GET['minAirTemp'] != ""){
+		$sql .= " airTemp > " . $_GET['minAirTemp'] . " AND ";
 	}
 }
-if(isset($_GET['lng'])){
-	if($_GET['lng'] != ""){
-		$sql .= " lon3=" . $_GET['lng']. " AND ";
+if(isset($_GET['maxAirTemp'])){
+	if($_GET['maxAirTemp'] != ""){
+		$sql .= " airTemp < " . $_GET['maxAirTemp'] . " AND ";
 	}
 }
-// //filter by observations 
-if (isset($_GET['obsGen'])){
-	if( ($_GET['obsGen'] == "true") ){
-		$sql .= " obsgen <> '' AND "; //not null
+//pressure
+if(isset($_GET['minPressure'])){
+	if($_GET['minPressure'] != ""){
+		$sql .= " pressure > " . $_GET['minPressure'] . " AND ";
 	}
 }
-
-//these are booleans
-if(isset($_GET['cargo'])){
-	if (($_GET['cargo'] == "true")){
-		$sql .= " cargo = TRUE AND ";
-	}
-}
-//did the record include a biology memo?
-if(isset($_GET['biology']) ){
-	if ( ($_GET['biology'] == "true")){
-		$sql .= " biology = TRUE AND ";
-	}
-}
-//did the record have warsAndFights  memo?
-if(isset($_GET['warsAndFights']) ){
-	if ( ($_GET['warsAndFights'] == "true")){
-		$sql .= " warsandfights = TRUE AND ";
-	}
-}
-// //did the record include any other  observations?
-if(isset($_GET['otherObs'])){
-	if ( ($_GET['otherObs'] == "true")){
-		$sql .= ' otherrem = TRUE AND ';
-	}
-}
-
-//did the record note illustrations?
-if(isset($_GET['illustrations'])){
-	if ( ($_GET['illustrations'] == "true")){
-		$sql .= ' illustrations = TRUE AND ';
-	}
-}
-//did the record note anything about the ship?
-if(isset($_GET['shipsAndRig'])){
-	if ( ($_GET['shipsAndRig'] == "true")){
-		$sql .= ' shipandrig = TRUE AND ';
-	}
-}
-
-//did the record note anything about life on the ship?
-if(isset($_GET['lifeOnBoard'])){
-	if ( ($_GET['lifeOnBoard'] == "true")){
-		$sql .= ' lifeonboard = TRUE AND ';
-	}
-}
-
-//was the ship anchored?
-if(isset($_GET['anchored'])){
-	if ( ($_GET['anchored'] == "true")){
-		$sql .= ' anchored = TRUE AND ';
-	}
-}
-//query the text field of the wind direction in original language
-if(isset($_GET['windDirection'])){
-	if($_GET['windDirection'] != ""){
-		$sql .= " winddirection ='" . $_GET['windDirection'] . "' AND ";
-	}
-}
-//query the text field of the wind force in original language
-if(isset($_GET['windForce'])){
-	if($_GET['windForce'] != ""){
-		$sql .= " windforce ='" . $_GET['windForce'] . "' AND ";
-	}
-}
-// //query the text field of the weather
-if(isset($_GET['weather'])){
-	if($_GET['weather'] != ""){
-		$sql .= " weather ='" . $_GET['weather'] . "' AND ";
-	}
-}
-//query the text field for the shape of the clouds
-if(isset($_GET['shapeClouds'])){
-	if($_GET['shapeClouds'] != ""){
-		$sql .= " shapeclouds ='" . $_GET['shapeClouds'] . "' AND ";
-	}
-}
-//query the text field of the direction of the clouds
-if(isset($_GET['dirClouds'])){
-	if($_GET['dirClouds'] != ""){
-		$sql .= " dirclouds ='" . $_GET['dirClouds'] . "' AND ";
-	}
-}
-
-if(isset($_GET['clearness'])){
-	if($_GET['clearness'] != ""){
-		$sql .= " clearness ='" . $_GET['clearness'] . "' AND ";
-	}
-}
-
-//text field about precipitation
-if(isset($_GET['precipitationDescriptor'])){
-	if($_GET['precipitationDescriptor'] != ""){
-		$sql .= " precipitationdescriptor ='" . $_GET['precipitationDescriptor'] . "' AND ";
+if(isset($_GET['maxPressure'])){
+	if($_GET['maxPressure'] != ""){
+		$sql .= " pressure < " . $_GET['maxPressure'] . " AND ";
 	}
 }
 
@@ -278,101 +147,45 @@ if(isset($_GET['seaice']) ){
 		$sql .= ' seaice = TRUE AND ';
 	}
 }
-
-// //geographic query
-if (isset($_GET['latN'])){
-	if($_GET['latN'] != ""){
-		$sql .= " lat3 <=" . $_GET['latN'] . " AND ";
-	}
-}
-if(isset($_GET['latS'])){
-	if($_GET['latS'] != ""){
-		$sql .= " lat3 >=" . $_GET['latS'] . " AND ";
-	}	
-}
-if(isset($_GET['lngE'])){
-	if($_GET['lngE'] != ""){
-		$sql .= " lon3 <=" . $_GET['lngE'] . " AND ";
-	}	
-}
-if(isset($_GET['lngW'])){
-	if($_GET['lngW'] != ""){
-		$sql .= " lon3 >=" . $_GET['lngW'] . " AND ";
-	}	
-}
-
 // //temporal search --> better than specifying year and month and day
-if (isset($_GET['minYear'])){
-	if ($_GET['minYear'] != ""){
-		$minDate = $_GET['minYear'];
-		if (isset($_GET['minMonth'])){
-			if($_GET['minMonth'] != ""){
-				$minDate .= "-" . $_GET['minMonth'];
-				if (isset($_GET['minDay'])){
-					if($_GET['minDay'] != ""){
-						$minDate .= "-" . $_GET['minDay'];
-					}else{
-						$minDate .= "-01";
-					}
-				}
-			}else{
-				$minDate .= "-01";
-			}
-		}
-		$sql .= " date >= CAST('" . $minDate . "' AS DATE) AND ";
+if(isset($_GET['maxDate'])){
+	if($_GET['maxDate'] != ""){
+		$sql .= " locations.date <= CAST('" . $_GET['maxDate'] . "' AS DATE) AND ";
 	}
 }
-if (isset($_GET['maxYear'])){
-	if ($_GET['maxYear'] != ""){
-		$maxDate = $_GET['maxYear'];
-		if (isset($_GET['maxMonth'])){
-			if($_GET['maxMonth'] != ""){
-				$maxDate .= "-" . $_GET['maxMonth'];
-				if (isset($_GET['maxDay'])){
-					if($_GET['maxDay'] != ""){
-						$maxDate .= "-" . $_GET['maxDay'];
-					}else{
-						$maxDate .= "-01";
-					}
-				}
-			}else{
-				$maxDate .= "-01";
-			}
-		}
-		$sql .= " date <= CAST('" . $maxDate . "' AS DATE) AND ";
+if(isset($_GET['minDate'])){
+	if($_GET['minDate'] != ""){
+		$sql .= " locations.date >= CAST('" . $_GET['minDate'] . "' AS DATE) AND ";
 	}
 }
-if (isset($_GET['weatherCodeNotNull'])){
-	if(($_GET['weatherCodeNotNull'] == "true")){
-		$sql .= " weather <> '' AND ";
+if(isset($_GET['windSpeedMin'])){
+	if($_GET['windSpeedMin'] != ""){
+		$sql .= " CAST((COALESCE(mps,'0')) AS double precision) >= " . $_GET['windSpeedMin'] . " AND ";
+	}
+}
+if(isset($_GET['windSpeedMax'])){
+	if($_GET['windSpeedMax'] != ""){
+		$sql .= " CAST((COALESCE(mps,'0')) AS double precision) <= " . $_GET['windSpeedMax'] . " AND ";
+	}
+}
+if(isset($_GET['windDirMin'])){
+	if($_GET['windDirMin'] != ""){
+		$sql .= " direction >= " . $_GET['windDirMin'] . " AND ";
+	}
+}
+if(isset($_GET['windDirMax'])){
+	if($_GET['windDirMax'] != ""){
+		$sql .= " direction <= " . $_GET['windDirMax'] . " AND ";
 	}
 }
 
-if(isset($_GET['join'])){ //only query on these fields if we've done the join so it doesn't fail for not having that column
-	if($_GET['join'] == "true"){
-		if(isset($_GET['windSpeedMin'])){
-			if($_GET['windSpeedMin'] != ""){
-				$sql .= " CAST((COALESCE(mps,'0')) AS double precision) >= " . $_GET['windSpeedMin'] . " AND ";
-			}
-		}
-		if(isset($_GET['windSpeedMax'])){
-			if($_GET['windSpeedMax'] != ""){
-				$sql .= " CAST((COALESCE(mps,'0')) AS double precision) <= " . $_GET['windSpeedMax'] . " AND ";
-			}
-		}
-		if(isset($_GET['windDirMin'])){
-			if($_GET['windDirMin'] != ""){
-				$sql .= " direction >= " . $_GET['windDirMin'] . " AND ";
-			}
-		}
-		if(isset($_GET['windDirMax'])){
-			if($_GET['windDirMax'] != ""){
-				$sql .= " direction <= " . $_GET['windDirMax'] . " AND ";
-			}
-		}
+if (isset($_GET['locationID'])){
+	if ($_GET['locationID'] != ""){
+	$sql .= " locations.locationid=" . $_GET['locationID'] ." ";		
 	}
 }
-// 
+// // 
+// // 
 // //the SQL is fully build with all the parameters now
 // //clear the ending
 $whereCheck = substr($sql, -7);
@@ -384,23 +197,7 @@ if($andCheck == " AND "){
 	$sql = substr($sql, 0, -5);
 }
 
-$sql .= ";";
-
-//does the user want field names back?
-// if (isset($_GET['header'])){
-	// if($_GET['header']){
-		// $header = true;
-	// }else{
-		// $header = false;
-	// }
-// }
-if (isset($_GET['header'])){
-	if (boolval($_GET['header']) || ($_GET['header'] == "true")){
-		$header= True;
-	}else{
-		$header= False;
-	}
-}
+$sql .= " order by voyageid, date ; ";
 
 
 // //do the sql
@@ -414,12 +211,8 @@ if($result){
 	$success = false;
 }
 
-if (isset($_GET['fieldnames'])){
-	if($_GET['fieldnames'] != ""){
-		$colnames = $_GET['fieldnames'];
-		$colnames = explode(",", $colnames); //only return these as array
-	}
-}
+$voyageIDs = array();
+$locationIDs = array();
 
 $out = array(
 	'timestamp'=> date('l jS \of F Y h:i:s A'),
@@ -429,7 +222,8 @@ $out = array(
 $out['query'] = $sql;
 $allData = array(); 
 
-// 
+
+// // 
 while ($data = pg_fetch_array($result)) {
 	$itemData = array();
 	$i = 0;
@@ -437,13 +231,28 @@ while ($data = pg_fetch_array($result)) {
 		$thisCol = $colnames[$i];
 		$thisVal = $data[$i];
 		$itemData[$thisCol] = $thisVal;
-		try {
-			$itemData[$thisCol] = $thisVal;
-		} catch (Exception $e) {
-		    echo $e;
-		}
 		 $i = $i + 1;
 	}
+	$locationID = $data[1];
+	if (isset($_GET['returnObservations'])){
+		$itemData['Observations'] = array();
+		if($_GET['returnObservations'] != ""){
+			$subsql = "SELECT obsid, memotype, memotext, memolanguage FROM observations WHERE locationid=" . $locationID . ";";
+			$subresult = pg_query($subsql);
+			while($obsData = pg_fetch_array($subresult)){
+				$row = array();
+				$p = 0;
+				while ($p < count($obsColnames)){
+					$col = $obsColnames[$p];
+					$val = $obsData[$p];
+					$row[$col] = $val;
+					$p = $p + 1;
+				}
+				array_push($itemData['Observations'], $row);
+			}	
+		}
+	}
+
 	array_push($allData, $itemData);
 }
 $out['data'] = $allData;

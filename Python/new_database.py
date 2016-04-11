@@ -38,10 +38,6 @@ cursor = remoteConn.cursor()
 
 ## Create the tables
 
-sql = 'drop table observations;'
-cursor.execute(sql)
-remoteConn.commit()
-
 sql = '''CREATE TABLE IF NOT EXISTS voyages (
             voyageID serial PRIMARY KEY,
             fromPlace text,
@@ -352,61 +348,64 @@ sql  = '''
             # date date,
             # recordID integer
 
-sql = '''truncate table locations cascade; SELECT shipname, lat3, lon3, distance, disttravelledunits, recid, voyageid, date from logs where voyageid is not null;'''
+# sql = '''SELECT shipname, lat3, lon3, distance, disttravelledunits, recid, voyageid, date from logs where voyageid is not null and recid < 10415 order by recid;'''
+# cursor.execute(sql)
+# i = 0
+# for row in cursor.fetchall():
+#     try:
+#         shipname = row[0]
+#         sql = "select shipid from ships where shipname='" + shipname + "';"
+#         cursor.execute(sql)
+#         shipid = cursor.fetchone()[0]
+#         units = row[4]
+#         dist = row[3]
+#         lat = row[1]
+#         lng = row[2]
+#         voyageid = row[6]
+#         recid = row[5]
+#         date = row[7].isoformat()
+#         if dist != "NA":
+#         #convert units
+#             try:
+#                 dist = float(dist)
+#             except:
+#                 dist = 0
+#             if units == "nm":
+#                 dist = dist * 1.15078
+#             elif units == 'Leagues':
+#                 dist = dist * 3.45234
+#             else:
+#                 dist = 0
+#         else:
+#             dist = 0
+#         sql = "INSERT INTO locations values (default, " + str(shipid) + "," + str(lat) + "," + str(lng) + "," + str(voyageid) + ","
+#         sql += str(dist) + ",'" + date + "'," + str(recid) + ");"
+#         sql += "Update logs set locationid = (SELECT currval(pg_get_serial_sequence('locations','locationid'))) where recid=" + str(recid) + ";"
+#         cursor.execute(sql)
+#         remoteConn.commit()
+#     except Exception as e:
+#         print e
+#         remoteConn.rollback()
+#     if i % 100 == 0:
+#         print i
+#     i += 1
+#
+
+locationIDS = []
+sql = "SELECT locationid from locations;"
 cursor.execute(sql)
-i = 0
 for row in cursor.fetchall():
-    if (i > 160207):
-        try:
-            shipname = row[0]
-            sql = "select shipid from ships where shipname='" + shipname + "';"
-            cursor.execute(sql)
-            shipid = cursor.fetchone()[0]
-            units = row[4]
-            dist = row[3]
-            lat = row[1]
-            lng = row[2]
-            voyageid = row[6]
-            recid = row[5]
-            date = row[7].isoformat()
-            if dist != "NA":
-            #convert units
-                try:
-                    dist = float(dist)
-                except:
-                    dist = 0
-                if units == "nm":
-                    dist = dist * 1.15078
-                elif units == 'Leagues':
-                    dist = dist * 3.45234
-                else:
-                    dist = 0
-            else:
-                dist = 0
-            sql = "INSERT INTO locations values (default, " + str(shipid) + "," + str(lat) + "," + str(lng) + "," + str(voyageid) + ","
-            sql += str(dist) + ",'" + date + "'," + str(recid) + ") returning locationid;"
-            print sql
-            cursor.execute(sql)
-            remoteConn.commit()
-            id = cursor.fetchone()[0]
-            sql = "UPDATE logs set locationid="+ str(id) + " where shipname='" + shipname + "' AND lat3=" + str(lat) + " AND lon3=" + str(lng) + " AND voyageid=" + str(voyageid) + ";"
-            cursor.execute(sql)
-            remoteConn.commit()
-        except Exception as e:
-            print e
-            remoteConn.rollback()
-    else:
-        i = i + 1
+    locationIDS.append(row[0])
+print len(locationIDS)
 
-
-
-sql = '''SELECT voyageid, locationid, logbooklanguage biologymemo, lifeonboardmemo, shipandrigmemo, allwinddirections, windforce, winddirection, warsandfights,
+sql = '''truncate table observations; SELECT voyageid, locationid, logbooklanguage, biologymemo, lifeonboardmemo, shipandrigmemo, allwinddirections, windforce, winddirection, warsandfightsmemo,
         otherrem, obsgen, cargomemo, weather, shapeclouds, dirclouds, clearness, cloudfrac, precipitationdescriptor, statesea, anchored, anchorplace,
-        currentdir, currentspeed, allwindforces from logs WHERE voyageid IS NOT NULL LIMIT 100; '''
+        currentdir, currentspeed, allwindforces, recid from logs WHERE locationid IS NOT NULL order by recid; '''
 # 21
 cursor.execute(sql)
 rows = cursor.fetchall()
 i = 0
+sql = ""
 for row in rows:
     voyageID = row[0]
     locationID = row[1]
@@ -414,23 +413,104 @@ for row in rows:
     p = 2
     opts = ['voyageid', 'locationid', 'obsLanguage', 'biology', 'lifeOnBoard', 'shipAndRig', 'allWindDirections', 'windForce', 'windDirection', 'warsAndFights', 'otherRemmarks',
             'generalObservations', 'cargo', 'weather', 'shapeOfClouds', 'directionOfClouds', 'clearness', 'cloudFraction', 'precipitationDescription',
-            'stateOfSea', 'anchored', 'anchorPlace', 'currentTravelDirection', 'currentTravelSpeed', 'allWindForces']
-    while p < len(row):
-        item = row[p]
-        if item != '' and item != 'NA':
-            col = opts[p]
-            sql = "INSERT INTO observations values (default," + str(voyageID) + "," + str(locationID) + ",'" + str(col) + "','" + str(item) + "','" + str(lang) + "');"
-            print sql
-        p += 1
-            # try:
-            #     cursor.execute(sql)
-            #     remoteConn.commit()
-            # except Exception as e:
-            #     print e
-            #     remoteConn.rollback()
+            'stateOfSea', 'anchored', 'anchorPlace', 'currentTravelDirection', 'currentTravelSpeed', 'allWindForces', 'recordID']
+    if locationID is not None and voyageID is not None and locationID in locationIDS:
+        while p < len(row):
+            item = row[p]
+            if item != '' and item != 'NA':
+                col = opts[p]
+                sql += "INSERT INTO observations values (default," + str(voyageID) + "," + str(locationID) + ",'" + str(col) + "','" + str(item) + "','" + str(lang) + "');"
+            p += 1
+        locationIDS.remove(locationID)
 
     if i % 100 == 0:
-        print i
+        try:
+            cursor.execute(sql)
+            remoteConn.commit()
+            sql = ""
 
-
-#sql = '''select probtair, sstreading, windforces.mps, winddirections.wind'''
+        except Exception as e:
+            print e
+            remoteConn.rollback()
+        print "Observations: " + str(i)
+    i += 1
+#
+#
+# locationIDS = []
+# sql = "SELECT locationid from locations;"
+# cursor.execute(sql)
+# for row in cursor.fetchall():
+#     locationIDS.append(row[0])
+# print len(locationIDS)
+#
+# sql = '''truncate table weather; select probtair, sstreading, windforces.mps, winddirections.direction, baroreading, sstreadingunits, airpressurereadingunits, pumpwater, locationid, gusts, thunder, rain, snow, seaice, hail, fog from logs
+#         INNER JOIN windforces on windforces.nldesc=logs.windforce
+#         INNER JOIN winddirections on winddirections.nldesc=logs.winddirection '''
+# cursor.execute(sql)
+# i = 0
+# sql = ""
+# for row in cursor.fetchall():
+#     airTemp = row[0]
+#     if airTemp != 'NA' and airTemp != '' and airTemp is not None:
+#         airTemp = float(row[0])
+#     else:
+#         airTemp = -1
+#     sst = row[1]
+#     if sst != 'NA' and sst != '' and airTemp is not None:
+#         sst = float(row[1])
+#     else:
+#         sst = -1
+#     mps = row[2]
+#     if mps != 'NA' and mps != '' and mps is not None:
+#         mps = float(mps)
+#     else:
+#         mps = -1
+#     direction = row[3]
+#     if direction != 'NA' and direction != '' and direction is not None:
+#         direction = float(direction)
+#     else:
+#         direction = -1
+#     pressureReading = row[4]
+#     if pressureReading != "NA" and pressureReading != '' and pressureReading is not None:
+#         pressureReading = float(pressureReading)
+#     else:
+#         pressureReading = -1
+#     sstUnits = row[5]
+#     pressureUnits = row[6]
+#     pumpwater = row[7]
+#     if pumpwater != 'NA' and pumpwater != '' and pumpwater is not None:
+#         pumpwater = float(pumpwater)
+#     else:
+#         pumpwater = -1
+#     locationID = row[8]
+#     gusts = row[9]
+#     thunder = row[10]
+#     rain = row[11]
+#     snow = row[12]
+#     seaice = row[13]
+#     hail = row[14]
+#     fog = row[15]
+#     ## convert units
+#     #Weatherid | locationid | airtemp | pressure | sst | winddirection | windforce | pumpwater | gusts | rain | fog | snow | thunder | hail | seaice
+#     if pressureUnits == 'Inches Mercury':
+#         pressureReading *= 25.4
+#     if pressureUnits != 'Inches Mercury' and pressureUnits != 'Millimeter Mercury' and pressureUnits != 'Millimeters Mercury':
+#         pressureReading = -1
+#     if locationID in locationIDS:
+#         sql += 'INSERT INTO weather values(default,' + str(locationID) + "," + str(airTemp) + "," + str(pressureReading) + "," + str(sst) + "," + str(direction) + "," + str(mps)  + "," + str(pumpwater) + "," + str(gusts) + "," + str(rain) + "," + str(fog) + "," + str(snow) +"," + str(thunder) + "," + str(hail) + "," + str(seaice) + ");"
+#         locationIDS.remove(locationID)
+#     if i % 100 == 0:
+#         try:
+#             cursor.execute(sql)
+#             remoteConn.commit()
+#             sql = ""
+#         except Exception as e:
+#             print e
+#             remoteConn.rollback()
+#         print "Weather: " + str(i)
+#     i += 1
+#
+#
+#
+#
+#
