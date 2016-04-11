@@ -27,7 +27,7 @@ $colnames = array("Nationality", "nationID");
 $sql = "SET statement_timeout TO 100000000;";
 $result = pg_query($sql);         
 //start building the sql
-$sql = "SELECT DISTINCT nationality, nationid FROM nations ";
+$sql = "SELECT DISTINCT nationality, nations.nationid FROM nations ";
 $sql .= " INNER JOIN voyages on voyages.nationid=nations.nationid WHERE ";
 
 // //temporal search --> better than specifying year and month and day

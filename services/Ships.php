@@ -25,7 +25,7 @@ if (!$db_connection){
 $sql = "SET statement_timeout TO 100000000;";
 $result = pg_query($sql);         
 //start building the sql
-$sql = "SELECT shiptype, shipinfo, shipname, notes, nations.nationality, shipid FROM ships  ";
+$sql = "SELECT ships.shiptype, ships.shipinfo, ships.shipname, notes, nations.nationality, ships.shipid FROM ships  ";
 $sql .= " INNER JOIN nations on nations.nationid = ships.nationid   ";
 $sql .= " INNER JOIN voyages on voyages.shipid = ships.shipid WHERE ";
 
@@ -120,7 +120,7 @@ $out['data'] = $allData;
 $out = json_encode($out);
 if(isset($_GET['callback'])){
 	if($_GET['callback'] != ""){
-		$out = $_GET['callback'] . "(" . out . ")";
+		$out = $_GET['callback'] . "(" . $out . ")";
 	}
 }
 echo $out;

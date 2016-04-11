@@ -20,6 +20,16 @@
 
 <body>
 <h1>Wooden Ships Database API Landing Page</h1>
+
+<p>All resources will return a JSON object that contains the following fields: <ul>
+	<li><b>timestamp:</b><i>The date of the query.</i></li>
+	<li><b>query:</b><i>The sql text of the query (for debugging).</i></li>
+	<li><b>success:</b><i>Boolean showing whether the query succeeded or failed at the database level.</i></li>
+	<li><b>Data:</b><i>An array of objects.  Object details are outlined below.</i></li>
+</ul></p>
+
+<p>All parameters and URIs are CaSe SeNSitiVe.  Use caution.</p>
+
 <h4>Available Resources: </h4>
 <ul>
 	<li><a href='Captains.php'>Captains.php</a>

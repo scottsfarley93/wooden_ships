@@ -26,7 +26,7 @@ if (!$db_connection){
 $sql = "SET statement_timeout TO 100000000;";
 $result = pg_query($sql);         
 //start building the sql
-$sql = "SELECT DISTINCT companyName, nationality, companyID FROM companies INNER JOIN nations on nations.
+$sql = "SELECT DISTINCT companies.companyName, nations.nationality, companies.companyID FROM companies INNER JOIN nations on nations.
 nationid=companies.nationid ";
 $sql .= " INNER JOIN voyages on voyages.companyid=companies.companyid WHERE ";
 
