@@ -1,11 +1,12 @@
 .land {
-    stroke: black;
+    fill: none;
+ 	stroke: #a5967e;
     stroke-width: 1px;
 }
 
 .countries_1715{
-	fill: gray;
-	stroke: black;
+	fill: #d7c7ad;
+  	stroke: #766951;
 	stroke-width: .5px;
 }
 
@@ -22,7 +23,7 @@
 }
 
 .mapContainer{
-	fill: none;
+	fill: #a4bac7;
 
 }
 
