@@ -1,0 +1,15 @@
+.land {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.countries {
+	fill: gray;
+	stroke: black;
+	stroke-width: .5px;
+}
+
+.mapContainer{
+	fill: none;
+
+}
