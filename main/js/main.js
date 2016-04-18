@@ -214,4 +214,7 @@ function changeProjection(projection, scale, center){
    globals.countries.transition().attr('d', path)
    globals.land.transition().attr('d', path)
 };
+<<<<<<< HEAD
 //this is a change
+=======
+>>>>>>> reproject
