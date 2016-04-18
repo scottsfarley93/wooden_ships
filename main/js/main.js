@@ -1,17 +1,32 @@
+//map frame dimensions
+var width = window.innerWidth * 1,
+    height = 550;
+
 var attrArray = ["countries_1715", "countries_1783", "countries_1815"];
 
 var expressed = attrArray[0]
 console.log(expressed)
 //load map
 
+var attrProj = ["projection1", "projection2"];
+
+var projection1 = d3.geo.vanDerGrinten4()
+	.scale(125)
+   	.translate([width / 2, height / 2])
+    .precision(.1);
+    
+var projection2 = d3.geo.mercator()
+    .scale((width + 1) / 2 / Math.PI)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var expressedProj = attrProj[0];
+console.log(expressedProj);
+
 window.onload = setMap();
 
 //set up map and call data
 function setMap(){
-
-	//map frame dimensions
-    var width = window.innerWidth * 1,
-        height = 550;
 
     //create new svg container for the map
     var mapContainer = d3.select("body")
@@ -86,7 +101,7 @@ function setMap(){
             .attr("class", "land")
             .attr("d", path);
 		
-		//dropdown change listener handler
+//dropdown change listener handler
 function changeAttribute(attribute){
     //change the expressed attribute
     expressed = attribute;
@@ -125,11 +140,39 @@ function changeAttribute(attribute){
                 return "countries_1815 " + d.properties.name;
             })
             .attr("d", path);    
+    	}
+};
+
+//dropdown change listener handler
+function changeProjection(projection){
+
+    console.log(expressedProj);
+    
+    if (expressed == attrProj[0]) {
+    	console.log("hello")
+    	
+    	var projection = d3.geo.vanDerGrinten4()
+    		.scale(125)
+   	 		.translate([width / 2, height / 2])
+    		.precision(.1);
+
+		var path = d3.geo.path()
+    	.projection(projection1);
     	
     	}
+    else {
+    	console.log("hello again")
     	
-        
+    	var projection = d3.geo.mercator()
+    		.scale((width + 1) / 2 / Math.PI)
+    		.translate([width / 2, height / 2])
+    		.precision(.1);
+
+		var path = d3.geo.path()
+    		.projection(projection2);
+    	}
 };
+
 
 
 //function to create a dropdown menu for attribute selection
@@ -156,51 +199,34 @@ function createDropdown(attrArray){
         .attr("value", function(d){ return d })
         .text(function(d){ return d });
 };
-		
-		createDropdown(attrArray);
-		 
-	};
+
+//function to create a dropdown menu for attribute selection
+function projDropdown(attrProj){
+    //add select element
+    var dropdownProjections = d3.select("body")
+        .append("select")
+        .attr("class", "dropdownProjections")
+        .on("change", function(){
+            changeProjection(this.value)
+        });
+
+    //add initial option
+    var titleOption = dropdownProjections.append("option")
+        .attr("class", "titleOption")
+        .attr("disabled", "true")
+        .text("Projection");
+
+    //add attribute name options
+    var projOptions = dropdownProjections.selectAll("projOptions")
+        .data(attrProj)
+        .enter()
+        .append("option")
+        .attr("value", function(d){ return d })
+        .text(function(d){ return d });
 };
-
-
-
-
-
-
-// set_projection(new Option("Mercator", "mercator", false, false));
-// 
-// function set_projection(option) {
-//   proj = option.value
-// 
-//   projection = eval("d3.geo."+proj+"();");
-// 
-//   path = d3.geo.path()
-//     .projection(projection);
-// 
-//   svg.countries_1715.selectAll("path").transition()
-//       .duration(1000)
-//        .attr("d", path);
-// }
-// 
-// function projection_selected(e){
-//   set_projection(e.target[e.target.selectedIndex])
-// }
-// 
-// var newSelect = document.createElement("select");
-// newSelect.id = "selectlistid"; // add some attributes
-// newSelect.onchange = projection_selected; // call the somethingChanged function when a change is made
-// newSelect[newSelect.length] = new Option("Aitoff","aitoff",false, false)
-// newSelect[newSelect.length] = new Option("Albers equal-area conic","albers",false, false);
-// newSelect[newSelect.length] = new Option("Armadillo","armadillo",false, false);
-// newSelect[newSelect.length] = new Option("August conformal","august",false, false);
-// newSelect[newSelect.length] = new Option("Lambert azimuthal equal-area","azimuthalEqualArea",false, false);
-// newSelect[newSelect.length] = new Option("azimuthal equidistant","azimuthalEquidistant",false, false);
-// newSelect[newSelect.length] = new Option("Baker Dinomic","baker",false, false);
-// newSelect[newSelect.length] = new Option("Berghaus Star","berghaus",false, false);
-// newSelect[newSelect.length] = new Option("Boggs eumorphic","boggs",false, false);
-// newSelect[newSelect.length] = new Option("Bonne","bonne",false, false);
-// 
-// newSelect[newSelect.length] = new Option("Mercator","mercator",false, true);
-// 
-// //document.getElementById('myDiv').appendChild(newSelect); // myDiv is the container to hold the select list
-// 
+		
+	createDropdown(attrArray);
+	projDropdown(attrProj)
+		 
+};
+};
