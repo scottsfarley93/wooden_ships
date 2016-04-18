@@ -1,184 +1,127 @@
-//map frame dimensions
-var width = window.innerWidth * 1,
-    height = 550;
+///this is Wooden Ships Main Javascript File
+//All functions are here
 
 var attrArray = ["countries_1715", "countries_1783", "countries_1815"];
 
 var expressed = attrArray[0]
-console.log(expressed)
-//load map
 
-var attrProj = ["projection1", "projection2"];
+var attrProj = ["VDG", "Mercator", "sat"]; // list of projections
 
-var projection1 = d3.geo.vanDerGrinten4()
-	.scale(125)
-   	.translate([width / 2, height / 2])
-    .precision(.1);
-    
-var projection2 = d3.geo.mercator()
-    .scale((width + 1) / 2 / Math.PI)
-    .translate([width / 2, height / 2])
-    .precision(.1);
+globals = {}
+globals.basemap = {}
+globals.map = {}
+globals.map.dimensions ={};
+globals.map.dimensions.height = $(window).height() * 0.9; //90% of the window height
+globals.map.dimensions.width = $(window).width() //100% of the window width
+
+
+globals.map.projection;
+globals.map.path;
 
 var expressedProj = attrProj[0];
-console.log(expressedProj);
 
-window.onload = setMap();
+
+
+$(document).ready(function(){
+	//stuff that happens as the map is created.
+	setMap(); //creates the map
+	createDropdown(attrArray); //creates the dropdown menu for years/basemap
+	projDropdown(attrProj) //creates the dropdown menu for projection
+})
+
 
 //set up map and call data
 function setMap(){
 
-    //create new svg container for the map
-    var mapContainer = d3.select("body")
-        .append("svg")
-        .attr("class", "mapContainer")
-        .attr("width", width)
-        .attr("height", height);
-
-	var projection = d3.geo.vanDerGrinten4()
-    	.scale(125)
-   	 	.translate([width / 2, height / 2])
-    	.precision(.1);
-
-	var path = d3.geo.path()
-    	.projection(projection);
-        
-    //use queue.js to parallelize asynchronous data loading
-    d3_queue.queue()
-        .defer(d3.json, "data/land.topojson") //load base map data
-    	.defer(d3.json, "data/cntry1715.topojson") //load overlay spatial data of countries
-    	.defer(d3.json, "data/cntry1783.topojson") //load overlay spatial data of countries
-    	.defer(d3.json, "data/cntry1815.topojson") //load overlay spatial data of countries
-        .await(callback);
-        
-	function callback(error, base, overlay1, overlay2, overlay3){
-        console.log(error);
-        console.log(base);
-        
-        //translate europe TopoJSON
-        var landBase = topojson.feature(base, base.objects.ne_110m_land),
-            countriesOverlay1 = topojson.feature(overlay1, overlay1.objects.cntry1715).features;
-            countriesOverlay2 = topojson.feature(overlay2, overlay2.objects.cntry1783).features;
-            countriesOverlay3 = topojson.feature(overlay3, overlay3.objects.cntry1815).features;
-        
-        //examine the results
-        console.log(landBase);
-        //examine the results
-            
-        //add France regions to map
-        var countries_1715 = mapContainer.selectAll(".countries_1715")
-            .data(countriesOverlay1)
-            .enter()
-            .append("path")
-            .attr("class", function(d){
-                return "countries_1715 " + d.properties.name;
-            })
-            .attr("d", path);
-            
-        //add France regions to map
-       //  var countries_1783 = mapContainer.selectAll(".countries_1783")
-//             .data(countriesOverlay2)
-//             .enter()
-//             .append("path")
-//             .attr("class", function(d){
-//                 return "countries_1783 " + d.properties.name;
-//             })
-//             .attr("d", path);
-            
-        //add France regions to map
-//         var countries_1815 = mapContainer.selectAll(".countries_1815")
-//             .data(countriesOverlay3)
-//             .enter()
-//             .append("path")
-//             .attr("class", function(d){
-//                 return "countries_1815 " + d.properties.name;
-//             })
-//             .attr("d", path);    
-          
-             //add Europe countries to map
-        var land = mapContainer.append("path")
-            .datum(landBase)
-            .attr("class", "land")
-            .attr("d", path);
+	    //create new svg container for the map
+	    globals.map.mapContainer = mapContainer = d3.select("#map")
+	        .append("svg")
+	        .attr("class", "mapContainer")
+	        .attr("width", globals.map.dimensions.width)
+	        .attr("height",  globals.map.dimensions.width);
+	        
+	    //use queue.js to parallelize asynchronous data loading
+	    d3_queue.queue()
+	        .defer(d3.json, "data/land.topojson") //load base map data
+	    	.defer(d3.json, "data/cntry1715.topojson") //load overlay spatial data of countries
+	    	.defer(d3.json, "data/cntry1783.topojson") //load overlay spatial data of countries
+	    	.defer(d3.json, "data/cntry1815.topojson") //load overlay spatial data of countries
+	        .await(callback);
+	        
+		function callback(error, base, overlay1, overlay2, overlay3){
+			//happens once the ajax have returned
+	        console.log(error);
+	        console.log(base);
+	        
+	        //translate europe TopoJSON
+	        var landBase = topojson.feature(base, base.objects.ne_110m_land).features,
+	            countriesOverlay1 = topojson.feature(overlay1, overlay1.objects.cntry1715).features;
+	            countriesOverlay2 = topojson.feature(overlay2, overlay2.objects.cntry1783).features;
+	            countriesOverlay3 = topojson.feature(overlay3, overlay3.objects.cntry1815).features;
+	        
+	        var countries_1715 = mapContainer.selectAll(".countries_1715")
+	            .data(countriesOverlay1)
+	            .enter()
+	            .append("path")
+	            .attr("class", function(d){
+	                return "countries_1715 " + d.properties.name;
+	            })
+	         
+	         globals.countries = countries_1715;  
+	         
+	         globals.land = mapContainer.append("path")
+	            .datum(landBase)
+	            .attr("class", "land"); 
+	         
+	         changeProjection("VDG");
+	}; //end of callback
+};//end of set map
+	         
+	         
 		
 //dropdown change listener handler
 function changeAttribute(attribute){
     //change the expressed attribute
     expressed = attribute;
-    console.log(expressed);
     if (expressed == attrArray[0]) {
-    	console.log("hi")
-    	//add France regions to map
-        var expressed = mapContainer.selectAll("." + expressed)
+        var expressed = globals.map.mapContainer.selectAll("." + expressed)
             .data(countriesOverlay1)
             .enter()
             .append("path")
             .attr("class", function(d){
                 return "countries_1715 " + d.properties.name;
             })
-            .attr("d", path);
+            .attr("d", globals.map.path);
     	}
     else if (expressed == attrArray[1]) {
-    	console.log("hi")
-    	//add France regions to map
-        var expressed = mapContainer.selectAll("." + expressed)
+        var expressed = globals.map.mapContainer.selectAll("." + expressed)
             .data(countriesOverlay2)
             .enter()
             .append("path")
             .attr("class", function(d){
                 return "countries_1783 " + d.properties.name;
             })
-            .attr("d", path);
+            .attr("d", globals.map.path);
     	}
     else {
-    	console.log("hi")
-    	var expressed = mapContainer.selectAll("." + expressed)
+    	var expressed = globals.map.mapContainer.selectAll("." + expressed)
             .data(countriesOverlay3)
             .enter()
             .append("path")
             .attr("class", function(d){
                 return "countries_1815 " + d.properties.name;
             })
-            .attr("d", path);    
+            .attr("d", globals.map.path);    
     	}
 };
 
-//dropdown change listener handler
-function changeProjection(projection){
-
-    console.log(expressedProj);
-    
-    if (expressed == attrProj[0]) {
-    	console.log("hello")
-    	
-    	var projection = d3.geo.vanDerGrinten4()
-    		.scale(125)
-   	 		.translate([width / 2, height / 2])
-    		.precision(.1);
-
-		var path = d3.geo.path()
-    	.projection(projection1);
-    	
-    	}
-    else {
-    	console.log("hello again")
-    	
-    	var projection = d3.geo.mercator()
-    		.scale((width + 1) / 2 / Math.PI)
-    		.translate([width / 2, height / 2])
-    		.precision(.1);
-
-		var path = d3.geo.path()
-    		.projection(projection2);
-    	}
-};
-
-
+	
+	
 
 //function to create a dropdown menu for attribute selection
 function createDropdown(attrArray){
     //add select element
-    var dropdown = d3.select("body")
+    var dropdown = d3.select("#controls")
         .append("select")
         .attr("class", "dropdown")
         .on("change", function(){
@@ -199,15 +142,24 @@ function createDropdown(attrArray){
         .attr("value", function(d){ return d })
         .text(function(d){ return d });
 };
-
+	
+	
+	
+	
 //function to create a dropdown menu for attribute selection
 function projDropdown(attrProj){
     //add select element
-    var dropdownProjections = d3.select("body")
+    var dropdownProjections = d3.select("#controls")
         .append("select")
         .attr("class", "dropdownProjections")
         .on("change", function(){
-            changeProjection(this.value)
+            if (this.value == "Mercator"){
+            	changeProjection("mercator")
+            }else if (this.value == "VDG"){
+            	changeProjection("VDG");
+            }else if(this.value == "sat"){
+            	changeProjection("sat")
+            }
         });
 
     //add initial option
@@ -225,8 +177,40 @@ function projDropdown(attrProj){
         .text(function(d){ return d });
 };
 		
-	createDropdown(attrArray);
-	projDropdown(attrProj)
+
 		 
-};
+
+//dropdown change listener handler
+function changeProjection(projection, scale, center){
+    //decide what projection to change to
+    if (projection == "VDG") {
+    	var projection = d3.geo.vanDerGrinten4()
+    		.scale(125)
+   	 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+    		.precision(.1);
+    }
+    else if (projection == "mercator"){
+    	var projection = d3.geo.mercator()
+    		.scale((globals.map.dimensions.width + 1) / 2 / Math.PI)
+    		.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
+    		.precision(.1);
+
+    }else if (projection == "sat"){
+		var projection = d3.geo.satellite()
+		    .distance(1.1)
+		    .scale(5500)
+		    .rotate([76.00, -34.50, 32.12])
+		    .center([-120, 37])
+		    .tilt(25)
+		    .clipAngle(Math.acos(1 / 1.1) * 180 / Math.PI - 1e-6)
+		    .precision(.1);
+    }
+   var path = d3.geo.path()
+    .projection(projection);
+   //make global
+   globals.map.projection = projection;
+   globals.map.path = path;
+   //do the update
+   globals.countries.transition().attr('d', path)
+   globals.land.transition().attr('d', path)
 };

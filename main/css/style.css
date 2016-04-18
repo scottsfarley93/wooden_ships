@@ -52,3 +52,11 @@
     border: 1px solid #999;
     box-shadow: 2px 2px 4px #999;
 }
+
+#controls{
+	height: 10%;;
+}
+
+#map {
+	height: 90%;
+}
