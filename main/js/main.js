@@ -39,6 +39,12 @@ function setMap(){
 	        .attr("class", "mapContainer")
 	        .attr("width", globals.map.dimensions.width)
 	        .attr("height",  globals.map.dimensions.width);
+
+        var zoom = d3.behavior.zoom()
+            .translate([0, 0])
+            .scale(1)
+            .scaleExtent([1, 8])
+            .on("zoom", zoomed);
 	        
 	    //use queue.js to parallelize asynchronous data loading
 	    d3_queue.queue()
@@ -66,18 +72,27 @@ function setMap(){
 	            .attr("class", function(d){
 	                return "countries_1715 " + d.properties.name;
 	            })
+                .call(zoom);
 	         
 	         globals.countries = countries_1715;  
 	         
 	         globals.land = mapContainer.append("path")
 	            .datum(landBase)
-	            .attr("class", "land"); 
+	            .attr("class", "land") 
+                .call(zoom);
 	         
 	         changeProjection("VDG");
 	}; //end of callback
+
+    function zoomed() {
+        mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
+        mapContainer.selectAll(".countries").style("stroke-width", .5 / d3.event.scale + "px");
+};
 };//end of set map
-	         
-	         
+
+
+
 		
 //dropdown change listener handler
 function changeAttribute(attribute){
