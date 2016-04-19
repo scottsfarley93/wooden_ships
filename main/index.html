@@ -10,16 +10,19 @@
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 	
-
+      <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+   
 
 	<!--put your external stylesheet links here-->
-	<link rel="stylesheet" href="css/style.css"/>
+	<link rel="stylesheet" href="assets/css/style.css"/>
 </head>
 
 <body>
 	
 	<h2>Wooden Ships</h2>
-	<div id='controls' class='row'></div> <!-- dropdowns go here-->
+	<div id='controls' class='row'>
+		<label>Adjust Hex Size</label><div id="hexSlider"></div>
+	</div> <!-- dropdowns go here-->
 	<div id='map' class='row'></div><!-- map go here-->
 	
 	
@@ -52,32 +55,22 @@
 	  </div>
 	</div>
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	<!--My Libraries-->
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-	<script type="text/javascript" src="lib/d3.min.js"></script>
-	<script type="text/javascript" src="lib/d3-queue.v2.min.js"></script>
-	<script type="text/javascript" src="lib/topojson.v1.min.js"></script>
-	<script type="text/javascript" src="lib/d3.geo.projection.min.js"></script>
-	<script type="text/javascript" src="lib/underscore-min.js"></script>
+	<script type="text/javascript" src="assets/lib/d3.min.js"></script>
+	<script type="text/javascript" src="assets/lib/d3-queue.v2.min.js"></script>
+	<script type="text/javascript" src="assets/lib/topojson.v1.min.js"></script>
+	<script type="text/javascript" src="assets/lib/d3.geo.projection.min.js"></script>
+	<script type="text/javascript" src="assets/lib/underscore-min.js"></script>
+	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	<script src="assets/lib/hexbin.min.js"></script>
 	
 
 	<!--My Script-->
-	<script type="text/javascript" src="js/main.js"></script>
+	<script type="text/javascript" src="assets/js/main.js"></script>
 </body>
 </html>
