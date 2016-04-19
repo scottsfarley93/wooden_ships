@@ -19,6 +19,8 @@ globals.map.path;
 globals.data = {};
 globals.data.filteredShips = []; //keep track of the currently applied filter
 
+globals.map.hexRadius = 1;
+
 globals.filter = {} //keep track of the currently applied filter
 
 var radius = d3.scale.sqrt()
@@ -27,19 +29,24 @@ var radius = d3.scale.sqrt()
 
 var expressedProj = attrProj[0];
 
+
+//this should be replaced with a better coloring func
 var color = d3.scale.linear()
-    .domain([0, 100])
-    .range(["white", "steelblue"])
+    .domain([0, 1000])
+    .range(["green", "darkgreen", "red", "darkred"])
     .interpolate(d3.interpolateLab);
+    
+parseDate = d3.time.format("%x").parse;
 
 
 
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
+	getShipData(displayShipDataHexes) //get the ship data 
 	//createDropdown(attrArray); //creates the dropdown menu for years/basemap
 	//projDropdown(attrProj) //creates the dropdown menu for projection
-	getShipData(displayShipDataHexes) //get the ship data and display it
+	
 	//open the modal dialog --> splash screen
 	//$("#splashModal").modal('show')
 })
@@ -84,14 +91,8 @@ function setMap(){
 	         
 	         globals.countries = countries_1715;  
 	         
-	         globals.land = mapContainer.append("path")
-	            .datum(landBase)
-	            .attr("class", "land"); 
 	         
-	         changeProjection("VDG");
-	         
-	         
-	         //create the hexbin layout
+	         	         //create the hexbin layout
 	      globals.map.hexbin = d3.hexbin()
 	    	.size([globals.map.dimensions.width, globals.map.dimensions.height])
 	    	.radius(2.5)
@@ -101,6 +102,13 @@ function setMap(){
 	    	.y(function(d){
 	    		return d.projected[1]
 	    	})
+	         
+	         globals.land = mapContainer.append("path")
+	            .datum(landBase)
+	            .attr("class", "land"); 
+	         
+	         changeProjection("VDG");
+	      
 	    	
 	}; //end of callback
 };//end of set map
@@ -241,6 +249,9 @@ function changeProjection(projection, scale, center){
    //do the update
    globals.countries.transition().attr('d', path)
    globals.land.transition().attr('d', path)
+   
+   //update the hexagons
+   changeHexSize(globals.map.hexRadius)
 };
 
 // function getShipsData(filter, callback){
@@ -292,18 +303,20 @@ function getShipData(callback){
 		console.log(data)
 		globals.data.ships = data //so we can revert later
 		globals.data.filteredShips = data //keep track of the most recent filtered data
-		callback(data)
+		if (callback){
+			callback(data)
+		}
 	})
 }
 
 function displayShipDataHexes(datasetArray){
 	//format a data array of ship data and display it on the map as hexbins
-	
 	datasetArray.forEach(function(d){
 		var p = globals.map.projection([d['longitude'], d['latitude']])
 		d['projected'] = p
+		//d.date = parseDate(d.date);
 	})
-	 globals.map.mapContainer.append("g")
+	 globals.map.hexagons = globals.map.mapContainer.append("g")
       .attr("class", "hexagons")
     .selectAll(".hexagons")
       .data(globals.map.hexbin(datasetArray))
@@ -311,7 +324,8 @@ function displayShipDataHexes(datasetArray){
       .attr("d", globals.map.hexbin.hexagon())
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
       //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
-      .style("fill", function(d) { return color(d.length); });
+      .attr("fill", function(d) { return color(d.length); })
+      .attr('stroke', 'orange').style('stroke-width', 0.25)
 }
 
 
@@ -344,6 +358,7 @@ function getLogbookRecord(locationID, callback){
 			if(callback){
 				callback(response);
 			}
+			changeHexSize(globals.map.hexRadius)
 		},
 		
 		error: function(xhr, status, error){
@@ -352,12 +367,18 @@ function getLogbookRecord(locationID, callback){
 	})
 }
 
+function removeHexes(){
+	d3.selectAll(".hexagons").transition(100).remove()
+}
+
 function changeHexSize(radius){
 	//remove all previous hexes
-	d3.selectAll(".hexagons").transition(100).remove()
+	console.log("changed hex size")
+	removeHexes();
 	globals.map.hexbin.radius(radius);
 	displayShipDataHexes(globals.data.filteredShips)//with the most recent filter applied
 }
+
 
 //initialize hex bin slider
 $( "#hexSlider" ).slider({
@@ -367,6 +388,7 @@ $( "#hexSlider" ).slider({
 	step: 0.5,
 	change: function(evt, ui){
 		newRadius = ui.value
+		globals.map.hexRadius = newRadius;
 		changeHexSize(newRadius)
 	}
 });

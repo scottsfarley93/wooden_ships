@@ -24,7 +24,7 @@ if not remoteConn:
     exit()
 print "Connected."
 
-out = open("/users/scottsfarley/documents/wooden_ships/data/british_points.csv", 'w')
+out = open("/users/scottsfarley/documents/wooden_ships/data/french_points.csv", 'w')
 writer = csv.writer(out, lineterminator="\n")
 header = ["locationID", "latitude", "longitude", "date", "voyageID", "snow", "airTemp", "pressure", "winddirection", "windSpeed", "gusts", "rain", "fog", "thunder", "hail", "seaIce"]
 writer.writerow(header)
@@ -35,7 +35,7 @@ sql = "SELECT locations.locationid, locations.latitude, locations.longitude, loc
       "inner join locations on locations.locationid = weather.locationid " \
       "inner join voyages on voyages.voyageid = locations.voyageid " \
       "inner join nations on nations.nationid = voyages.nationid " \
-      "where nations.nationality = 'British';"
+      "where nations.nationality = 'French';"
 print sql
 cursor = remoteConn.cursor()
 cursor.execute(sql)
