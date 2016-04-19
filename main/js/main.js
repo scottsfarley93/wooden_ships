@@ -73,7 +73,9 @@ function setMap(){
 	            .datum(landBase)
 	            .attr("class", "land"); 
 	         
+
 	         changeProjection("VDG");
+	         
 	}; //end of callback
 };//end of set map
 	         
@@ -178,7 +180,6 @@ function projDropdown(attrProj){
 };
 		
 
-		 
 
 //dropdown change listener handler
 function changeProjection(projection, scale, center){
@@ -188,6 +189,49 @@ function changeProjection(projection, scale, center){
     		.scale(125)
    	 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
     		.precision(.1);
+    		
+    	// var graticule = d3.geo.graticule()
+    	// .step([10, 10]);
+    	// globals.map.mapContainer.graticule = d3.select(".graticule")
+	        // .append("svg")
+	        // .attr("class", "graticule")
+	    // console.log(graticule)
+// 
+		// var gratLines = globals.map.mapContainer.selectAll(".gratLines") //select graticule elements that will be created
+			// .data(graticule.lines()) //bind graticule lines to each element to be created
+	  		// .enter() //create an element for each datum
+			// .append("path") //append each element to the svg as a path element
+			// .attr("class", "gratLines") //assign class for styling
+			// .attr("d", path); //project graticule lines
+    	// console.log(gratLines)
+    	
+    	//function drawgrat(){
+
+			var g = d3.select('g.features');
+			console.log(g)
+			var path = d3.geo.path()
+			.projection(projection);
+
+			var graticule = d3.geo.graticule();
+
+			console.log(graticule)
+			g.append('path')
+			.datum(graticule)
+			.attr("class", function(d){
+			console.log(d);
+			return 'grat'})
+			.attr('d', path)
+			.attr('fill', 'none')
+			.attr('stroke', 0);
+
+			var gratLines = globals.map.mapContainer.selectAll(".gratLines") //select graticule elements that will be created
+			.data(graticule.lines()) //bind graticule lines to each element to be created
+	  		.enter() //create an element for each datum
+			.append("path") //append each element to the svg as a path element
+			.attr("class", "gratLines") //assign class for styling
+			.attr("d", path); //project graticule lines
+    	console.log(gratLines)
+
     }
     else if (projection == "mercator"){
     	var projection = d3.geo.mercator()
@@ -207,14 +251,15 @@ function changeProjection(projection, scale, center){
     }
    var path = d3.geo.path()
     .projection(projection);
+   
    //make global
    globals.map.projection = projection;
    globals.map.path = path;
    //do the update
    globals.countries.transition().attr('d', path)
    globals.land.transition().attr('d', path)
+   // globals.map.graticule = graticule
+   // globals.map.gratLines = gratLines
+  
+   	
 };
-<<<<<<< HEAD
-//this is a change
-=======
->>>>>>> reproject
