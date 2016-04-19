@@ -224,6 +224,8 @@ function getShipsData(filter, callback){
 		beforeSend: function(){
 			t1 = new Date().getTime();
 			console.log("Getting ships from: " + this.url)
+			$("#loading").show();
+			$("#nation-select-list").hide();
 		},
 		error: function(xhr, status, error){
 			console.log("ERROR: " + error);
@@ -234,13 +236,14 @@ function getShipsData(filter, callback){
 			t2 = new Date().getTime();
 			console.log("Got response from ships server.");
 			globals.data.ships = response['data'];
+			console.log("Roundtrip to server took " + ((t2-t1)/1000) + " seconds.")
+			$("#")
 			//now we can do any callback we want
 			if (callback){
 				callback(response);
 			}
-		},
-		done: function(){
-			console.log("Roundtrip to server took " + ((t2-t1)/1000) + " seconds.")
+			$("#splashModal").modal('hide')
+			$("#loading").hide();
 		}
 	})
 }
@@ -257,10 +260,13 @@ $(".nation-select").click(function(){
 })
 
 
+$("#loading").hide()
+
+
 function getPorts(filter, callback){        
 	  d3_queue.queue()
-	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php?geocode=true&modernName=true")
-	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php?geocode=true&modernName=true")
+	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php", {geocode: true, modernName: true})
+	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php", {geocode: true, modernName: true})
 	  	.await(uniquePorts)
 }
 
@@ -269,5 +275,27 @@ function uniquePorts(){
 	bigArray = globals.data.voyageStarts.concat(voyage.data.voyageEnds);
 	globals.data.ports = _.uniq(bigArray, function(d){
 		return d.place;
+	})
+}
+
+function getLogbookRecord(locationID, callback){
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/data.php",{
+		beforeSend: function(){
+			console.log("Getting logbook data from: " + this.url)
+		},
+		data: {
+			locationID: locationID
+		},
+		dataType:"jsonp",
+		success: function(response){
+			console.log(response['data'][0]);
+			if(callback){
+				callback(response);
+			}
+		},
+		
+		error: function(xhr, status, error){
+			console.log("ERROR: " + error)
+		}
 	})
 }
