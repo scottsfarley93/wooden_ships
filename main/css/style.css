@@ -57,6 +57,11 @@
 	height: 10%;;
 }
 
+#slider{
+    padding-top: 100px;
+
+}
+
 #map {
 	height: 90%;
 }

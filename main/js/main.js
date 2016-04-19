@@ -28,7 +28,8 @@ $(document).ready(function(){
 	createDropdown(attrArray); //creates the dropdown menu for years/basemap
 	projDropdown(attrProj); //creates the dropdown menu for projection
     zoomed(); //allows map to zoom
-    createSlider() //creates temporal slider
+    createSlider(); //creates temporal slider
+    changeTime(date) //changes time on slider
 })
 
 
@@ -213,7 +214,8 @@ function changeProjection(projection, scale, center){
     		.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
     		.precision(.1);
 
-    }else if (projection == "sat"){
+    }
+    else if (projection == "sat"){
 		var projection = d3.geo.satellite()
 		    .distance(1.1)
 		    .scale(5500)
@@ -234,8 +236,7 @@ function changeProjection(projection, scale, center){
 };
 
 
-
-function createSlider(){
+//function createSlider(){
 
     formatDate = d3.time.format("%Y");
 
@@ -245,17 +246,15 @@ function createSlider(){
         right: 50,
         bottom: 50,
         left: 50
-      },
-      width = 400 - margin.left - margin.right,
-      height = 100 - margin.bottom - margin.top;
-
+    },
+    width = 400 - margin.left - margin.right,
+    height = 100 - margin.bottom - margin.top;
 
     // scale function
     var timeScale = d3.time.scale()
-      .domain([new Date('1700-01-02'), new Date('1851-01-01')])
-      .range([0, width])
-      .clamp(true);
-
+        .domain([new Date('1700-01-02'), new Date('1851-01-01')])
+        .range([0, width])
+        .clamp(true);
 
     // initial value
     var startValue = timeScale(new Date('1700-03-20'));
@@ -265,73 +264,124 @@ function createSlider(){
 
     // defines brush
     var brush = d3.svg.brush()
-      .x(timeScale)
-      .extent([startingValue, startingValue])
-      .on("brush", brushed);
+        .x(timeScale)
+        .extent([startingValue, startingValue])
+        .on("brush", brushed);
 
-    var svg = d3.select("body").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      // classic transform to position g
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var svg = d3.select("#slider").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        // classic transform to position g
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     svg.append("g")
-      .attr("class", "x axis")
+        .attr("class", "x axis")
     // put in middle of screen
     .attr("transform", "translate(0," + height / 2 + ")")
     // inroduce axis
     .call(d3.svg.axis()
-      .scale(timeScale)
-      .orient("bottom")
-      .tickFormat(function(d) {
+        .scale(timeScale)
+        .orient("bottom")
+        .tickFormat(function(d) {
         return formatDate(d);
-      })
-      .tickSize(0)
-      .tickPadding(12)
-      .tickValues([timeScale.domain()[0], timeScale.domain()[1]]))
-      .select(".domain")
-      .select(function() {
+        })
+        .tickSize(0)
+        .tickPadding(12)
+        .tickValues([timeScale.domain()[0], timeScale.domain()[1]]))
+        .select(".domain")
+        .select(function() {
         console.log(this);
         return this.parentNode.appendChild(this.cloneNode(true));
-      })
-      .attr("class", "halo");
+        })
+        .attr("class", "halo");
 
     var slider = svg.append("g")
-      .attr("class", "slider")
-      .call(brush);
+        .attr("class", "slider")
+        .call(brush);
 
     slider.selectAll(".extent,.resize")
-      .remove();
+        .remove();
 
     slider.select(".background")
-      .attr("height", height);
+        .attr("height", height);
 
     var handle = slider.append("g")
-      .attr("class", "handle")
+        .attr("class", "handle")
 
     handle.append("path")
-      .attr("transform", "translate(0," + height / 2 + ")")
-      .attr("d", "M 0 -20 V 20")
+        .attr("transform", "translate(0," + height / 2 + ")")
+        .attr("d", "M 0 -20 V 20")
 
     handle.append('text')
-      .text(startingValue)
-      .attr("transform", "translate(" + (-18) + " ," + (height / 2 - 25) + ")");
+        .text(startingValue)
+        .attr("transform", "translate(" + (-18) + " ," + (height / 2 - 25) + ")");
 
     slider
-      .call(brush.event)
+        .call(brush.event)
 
     function brushed() {
-      var value = brush.extent()[0];
+        var value = brush.extent()[0];
 
-      if (d3.event.sourceEvent) { // not a programmatic event
+        if (d3.event.sourceEvent) { // not a programmatic event
         value = timeScale.invert(d3.mouse(this)[0]);
         brush.extent([value, value]);
-      }
+        }
 
-      handle.attr("transform", "translate(" + timeScale(value) + ",0)");
-      handle.select('text').text(formatDate(value));
+        handle.attr("transform", "translate(" + timeScale(value) + ",0)");
+        handle.select('text').text(formatDate(value));
+        }
+// }; // end createSlider function
+
+function changeTime(date){
+
+    var expressedTime = d3.selectAll("#map")
+        .attr("stroke", "none")
+        .attr("fill", "none");
+
+    if (timeScale < Date('1783-01-02')){
+
+        var expressed = globals.map.mapContainer.selectAll("." + expressed)
+            .data(countriesOverlay1)
+            .enter()
+            .append("path")
+            .attr("class", function(d){
+                return "countries_1715 " + d.properties.name;
+            })
+            .attr("d", globals.map.path)
+            .attr("stroke", red)
+            .attr("fill", red);
+        }
+    };
+    
+    else if (timeScale < Date('1815-01-02')){
+
+        var expressed = globals.map.mapContainer.selectAll("." + expressed)
+            .data(countriesOverlay2)
+            .enter()
+            .append("path")
+            .attr("class", function(d){
+                return "countries_1783 " + d.properties.name;
+            })
+            .attr("d", globals.map.path)
+            .attr("stroke", red)
+            .attr("fill", red);
     }
-};
+
+    else if (timeScale < Date('1815-01-02')){
+        
+        var expressed = globals.map.mapContainer.selectAll("." + expressed)
+            .data(countriesOverlay3)
+            .enter()
+            .append("path")
+            .attr("class", function(d){
+                return "countries_1815 " + d.properties.name;
+            })
+            .attr("d", globals.map.path) 
+            .attr("stroke", red)
+            .attr("fill", red); 
+    }
+
+}; //end changeTime function
 
 
