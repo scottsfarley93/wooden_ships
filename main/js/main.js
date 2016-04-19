@@ -13,10 +13,10 @@ globals.map = {}
 globals.map.dimensions ={};
 globals.map.dimensions.height = $(window).height() * 0.9; //90% of the window height
 globals.map.dimensions.width = $(window).width() //100% of the window width
-
-
 globals.map.projection;
 globals.map.path;
+
+globals.data = {};
 
 var expressedProj = attrProj[0];
 
@@ -27,6 +27,9 @@ $(document).ready(function(){
 	setMap(); //creates the map
 	createDropdown(attrArray); //creates the dropdown menu for years/basemap
 	projDropdown(attrProj) //creates the dropdown menu for projection
+	
+	//open the modal dialog --> splash screen
+	$("#splashModal").modal('show')
 })
 
 
@@ -214,3 +217,57 @@ function changeProjection(projection, scale, center){
    globals.countries.transition().attr('d', path)
    globals.land.transition().attr('d', path)
 };
+
+function getShipsData(filter, callback){
+	var t1, t2
+	$.ajax("http://grad.geography.wisc.edu/sfarley2/data.php", {
+		beforeSend: function(){
+			t1 = new Date().getTime();
+			console.log("Getting ships from: " + this.url)
+		},
+		error: function(xhr, status, error){
+			console.log("ERROR: " + error);
+		},
+		data: filter,//this is an object with API parameters
+		dataType: "jsonp",//so we can reach an external server
+		success: function(response){
+			t2 = new Date().getTime();
+			console.log("Got response from ships server.");
+			globals.data.ships = response['data'];
+			//now we can do any callback we want
+			if (callback){
+				callback(response);
+			}
+		},
+		done: function(){
+			console.log("Roundtrip to server took " + ((t2-t1)/1000) + " seconds.")
+		}
+	})
+}
+//event listener for nation select
+
+$(".nation-select").click(function(){
+	//load ships on button click
+	var nation = $(this).text();
+	//load ships data with this nation
+	filter = {
+		nationality: nation
+	};
+	getShipsData(filter);
+})
+
+
+function getPorts(filter, callback){        
+	  d3_queue.queue()
+	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php?geocode=true&modernName=true")
+	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php?geocode=true&modernName=true")
+	  	.await(uniquePorts)
+}
+
+function uniquePorts(){
+	//combine the two parts arrays so that we have only one array of geocoded ports
+	bigArray = globals.data.voyageStarts.concat(voyage.data.voyageEnds);
+	globals.data.ports = _.uniq(bigArray, function(d){
+		return d.place;
+	})
+}
