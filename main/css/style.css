@@ -11,14 +11,14 @@
 }
 
 .countries_1783{
-	fill: gray;
-	stroke: black;
+	fill: #d7c7ad;
+  	stroke: #766951;
 	stroke-width: .5px;
 }
 
 .countries_1815{
-	fill: gray;
-	stroke: black;
+	fill: #d7c7ad;
+  	stroke: #766951;
 	stroke-width: .5px;
 }
 
@@ -29,8 +29,8 @@
 
 .dropdown {
     position: absolute;
-    top: 40px;
-    left: 425px;
+    top: 80px;
+    left: 20px;
     z-index: 10;
     font-family: baskerville;
     font-size: 1em;
@@ -38,4 +38,25 @@
     padding: 2px;
     border: 1px solid #999;
     box-shadow: 2px 2px 4px #999;
+}
+
+.dropdownProjections{
+    position: absolute;
+    top: 130px;
+    left: 20px;
+    z-index: 10;
+    font-family: baskerville;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 2px;
+    border: 1px solid #999;
+    box-shadow: 2px 2px 4px #999;
+}
+
+#controls{
+	height: 10%;;
+}
+
+#map {
+	height: 90%;
 }
