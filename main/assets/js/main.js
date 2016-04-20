@@ -65,9 +65,6 @@ function setMap(){
 	    //use queue.js to parallelize asynchronous data loading
 	    d3_queue.queue()
 	        .defer(d3.json, "assets/data/land.topojson") //load base map data
-	    	.defer(d3.json, "assets/data/cntry1715.topojson") //load overlay spatial data of countries
-	    	.defer(d3.json, "assets/data/cntry1783.topojson") //load overlay spatial data of countries
-	    	.defer(d3.json, "assets/data/cntry1815.topojson") //load overlay spatial data of countries
 	        .await(callback);
 	        
 		function callback(error, base, overlay1, overlay2, overlay3){
@@ -76,23 +73,10 @@ function setMap(){
 	        console.log(base);
 	        
 	        //translate europe TopoJSON
-	        var landBase = topojson.feature(base, base.objects.ne_110m_land).features,
-	            countriesOverlay1 = topojson.feature(overlay1, overlay1.objects.cntry1715).features;
-	            countriesOverlay2 = topojson.feature(overlay2, overlay2.objects.cntry1783).features;
-	            countriesOverlay3 = topojson.feature(overlay3, overlay3.objects.cntry1815).features;
-	        
-	        var countries_1715 = mapContainer.selectAll(".countries_1715")
-	            .data(countriesOverlay1)
-	            .enter()
-	            .append("path")
-	            .attr("class", function(d){
-	                return "countries_1715 " + d.properties.name;
-	            })
-	         
-	         globals.countries = countries_1715;  
+	        var landBase = topojson.feature(base, base.objects.ne_110m_land).features
 	         
 	         
-	         	         //create the hexbin layout
+	      //create the hexbin layout
 	      globals.map.hexbin = d3.hexbin()
 	    	.size([globals.map.dimensions.width, globals.map.dimensions.height])
 	    	.radius(2.5)
@@ -103,80 +87,24 @@ function setMap(){
 	    		return d.projected[1]
 	    	})
 	         
-	         globals.land = mapContainer.append("path")
-	            .datum(landBase)
-	            .attr("class", "land"); 
+	         globals.land = mapContainer
+	            .data(landBase)
+	            .enter()
+	            .append("path")
+	            .attr("class", "land")
+	            .style("stroke", "black"); 
+
+	        console.log(globals.land)
 	         
 	         changeProjection("VDG");
 	      
 	    	
 	}; //end of callback
 };//end of set map
-	         
-	         
-		
-//dropdown change listener handler
-function changeAttribute(attribute){
-    //change the expressed attribute
-    expressed = attribute;
-    if (expressed == attrArray[0]) {
-        var expressed = globals.map.mapContainer.selectAll("." + expressed)
-            .data(countriesOverlay1)
-            .enter()
-            .append("path")
-            .attr("class", function(d){
-                return "countries_1715 " + d.properties.name;
-            })
-            .attr("d", globals.map.path);
-    	}
-    else if (expressed == attrArray[1]) {
-        var expressed = globals.map.mapContainer.selectAll("." + expressed)
-            .data(countriesOverlay2)
-            .enter()
-            .append("path")
-            .attr("class", function(d){
-                return "countries_1783 " + d.properties.name;
-            })
-            .attr("d", globals.map.path);
-    	}
-    else {
-    	var expressed = globals.map.mapContainer.selectAll("." + expressed)
-            .data(countriesOverlay3)
-            .enter()
-            .append("path")
-            .attr("class", function(d){
-                return "countries_1815 " + d.properties.name;
-            })
-            .attr("d", globals.map.path);    
-    	}
-};
 
-	
-	
-
-//function to create a dropdown menu for attribute selection
-function createDropdown(attrArray){
-    //add select element
-    var dropdown = d3.select("#controls")
-        .append("select")
-        .attr("class", "dropdown")
-        .on("change", function(){
-            changeAttribute(this.value)
-        });
-
-    //add initial option
-    var titleOption = dropdown.append("option")
-        .attr("class", "titleOption")
-        .attr("disabled", "true")
-        .text("Select Year");
-
-    //add attribute name options
-    var attrOptions = dropdown.selectAll("attrOptions")
-        .data(attrArray)
-        .enter()
-        .append("option")
-        .attr("value", function(d){ return d })
-        .text(function(d){ return d });
+function zoomed() {
+    mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
 };
 	
 	
@@ -247,7 +175,6 @@ function changeProjection(projection, scale, center){
    globals.map.projection = projection;
    globals.map.path = path;
    //do the update
-   globals.countries.transition().attr('d', path)
    globals.land.transition().attr('d', path)
    
    //update the hexagons
