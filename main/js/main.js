@@ -189,23 +189,6 @@ function changeProjection(projection, scale, center){
     		.scale(125)
    	 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
     		.precision(.1);
-    		
-    	// var graticule = d3.geo.graticule()
-    	// .step([10, 10]);
-    	// globals.map.mapContainer.graticule = d3.select(".graticule")
-	        // .append("svg")
-	        // .attr("class", "graticule")
-	    // console.log(graticule)
-// 
-		// var gratLines = globals.map.mapContainer.selectAll(".gratLines") //select graticule elements that will be created
-			// .data(graticule.lines()) //bind graticule lines to each element to be created
-	  		// .enter() //create an element for each datum
-			// .append("path") //append each element to the svg as a path element
-			// .attr("class", "gratLines") //assign class for styling
-			// .attr("d", path); //project graticule lines
-    	// console.log(gratLines)
-    	
-    	//function drawgrat(){
 
 			var g = d3.select('g.features');
 			console.log(g)
@@ -238,6 +221,35 @@ function changeProjection(projection, scale, center){
     		.scale((globals.map.dimensions.width + 1) / 2 / Math.PI)
     		.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
     		.precision(.1);
+    		
+    		
+    	var g = d3.select('g.features');
+			console.log(g)
+			var path = d3.geo.path()
+			.projection(projection);
+
+			var graticule = d3.geo.graticule();
+
+			console.log(graticule)
+			g.append('path')
+			.datum(graticule)
+			.attr("class", function(d){
+			console.log(d);
+			return 'grat'})
+			.attr('d', path)
+			.attr('fill', 'none')
+			.attr('stroke', 0);
+
+			var gratLines = globals.map.mapContainer.selectAll(".gratLines") //select graticule elements that will be created
+			.data(graticule.lines()) //bind graticule lines to each element to be created
+	  		.enter() //create an element for each datum
+			.append("path") //append each element to the svg as a path element
+			.attr("class", "gratLines") //assign class for styling
+			.attr("d", path); //project graticule lines
+    	console.log(gratLines)
+    	console.log("mercator")
+    	gratLines.refresh()
+    		
 
     }else if (projection == "sat"){
 		var projection = d3.geo.satellite()
@@ -263,3 +275,19 @@ function changeProjection(projection, scale, center){
   
    	
 };
+
+
+// var graticule = d3.geo.graticule()
+    	// .step([10, 10]);
+    	// globals.map.mapContainer.graticule = d3.select(".graticule")
+	        // .append("svg")
+	        // .attr("class", "graticule")
+	    // console.log(graticule)
+// 
+		// var gratLines = globals.map.mapContainer.selectAll(".gratLines") //select graticule elements that will be created
+			// .data(graticule.lines()) //bind graticule lines to each element to be created
+	  		// .enter() //create an element for each datum
+			// .append("path") //append each element to the svg as a path element
+			// .attr("class", "gratLines") //assign class for styling
+			// .attr("d", path); //project graticule lines
+    	// console.log(gratLines)
