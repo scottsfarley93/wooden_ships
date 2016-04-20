@@ -21,6 +21,8 @@ globals.data.filteredShips = []; //keep track of the currently applied filter
 
 globals.map.hexRadius = 1;
 
+scale0 = (globals.map.dimensions.width - 1) / 2 / Math.PI;
+
 globals.filter = {} //keep track of the currently applied filter
 
 var radius = d3.scale.sqrt()
@@ -37,6 +39,12 @@ var color = d3.scale.linear()
     .interpolate(d3.interpolateLab);
     
 parseDate = d3.time.format("%x").parse;
+
+var zoom = d3.behavior.zoom()
+    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+    .scale(scale0)
+    .scaleExtent([scale0, 8 * scale0])
+    .on("zoom", zoomed);
 
 
 
@@ -61,6 +69,16 @@ function setMap(){
 	        .attr("class", "mapContainer")
 	        .attr("width", globals.map.dimensions.width)
 	        .attr("height",  globals.map.dimensions.width);
+	        
+	        
+	    globals.map.g = globals.map.mapContainer.append("g");
+
+		globals.map.mapContainer.append("rect")
+		    .attr("class", "overlay")
+		    .attr("width", globals.map.dimensions.width)
+		    .attr("height", globals.map.dimensions.height);
+		
+		
 	        
 	    //use queue.js to parallelize asynchronous data loading
 	    d3_queue.queue()
@@ -92,19 +110,29 @@ function setMap(){
 	            .enter()
 	            .append("path")
 	            .attr("class", "land")
-	            .style("stroke", "black").style("fill", "blue"); 
+	            //.style("stroke", "black").style("fill", "blue"); 
 
 	        console.log(globals.land)
 	         
 	         changeProjection("VDG");
+	     
+	     globals.map.mapContainer.call(zoom).call(zoom.event)
 	      
 	    	
 	}; //end of callback
 };//end of set map
 
 function zoomed() {
-    mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
+    // mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    // mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
+   console.log("Zoomed")
+    globals.map.projection
+      .translate(zoom.translate())
+      .scale(zoom.scale());
+
+  globals.map.mapContainer.selectAll("path")
+      .attr("d", globals.map.path);
+  changeHexSize(globals.map.hexRadius)
 };
 	
 	
@@ -258,6 +286,7 @@ function displayShipDataHexes(datasetArray){
     .selectAll(".hexagons")
       .data(globals.map.hexbin(datasetArray))
     .enter().append("path")
+    	.attr('class', 'hexagon')
       .attr("d", globals.map.hexbin.hexagon())
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
       //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
