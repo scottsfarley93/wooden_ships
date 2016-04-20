@@ -33,7 +33,7 @@ var expressedProj = attrProj[0];
 //this should be replaced with a better coloring func
 var color = d3.scale.linear()
     .domain([0, 1000])
-    .range(["green", "darkgreen", "red", "darkred"])
+    .range(["green","darkred"])
     .interpolate(d3.interpolateLab);
     
 parseDate = d3.time.format("%x").parse;
@@ -87,12 +87,12 @@ function setMap(){
 	    		return d.projected[1]
 	    	})
 	         
-	         globals.land = mapContainer
+	         globals.land = globals.map.mapContainer.selectAll(".land")
 	            .data(landBase)
 	            .enter()
 	            .append("path")
 	            .attr("class", "land")
-	            .style("stroke", "black"); 
+	            .style("stroke", "black").style("fill", "blue"); 
 
 	        console.log(globals.land)
 	         
@@ -228,6 +228,16 @@ function changeProjection(projection, scale, center){
 function getShipData(callback){
 	d3.csv("assets/data/british_points.csv", function(data){
 		console.log(data)
+		_.each(data, function(d){
+			d.airTemp = +d.airTemp;
+			d.pressure = +d.pressure
+			d.sst = +d.sst
+			d.winddirection = +d.winddirection;
+			d.windSpeed = +d.windSpeed;
+			d.latitude = +d.latitude;
+			d.longitude = +d.longitude;
+			d.date = new Date(d.date)
+		})
 		globals.data.ships = data //so we can revert later
 		globals.data.filteredShips = data //keep track of the most recent filtered data
 		if (callback){
@@ -251,10 +261,9 @@ function displayShipDataHexes(datasetArray){
       .attr("d", globals.map.hexbin.hexagon())
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
       //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
-      .attr("fill", function(d) { return color(d.length); })
+      .attr("fill", 'green')
       .attr('stroke', 'orange').style('stroke-width', 0.25)
 }
-
 
 function getPorts(filter, callback){        
 	  d3_queue.queue()
@@ -320,3 +329,6 @@ $( "#hexSlider" ).slider({
 	}
 });
 //control hex bin size
+
+
+

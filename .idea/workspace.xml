@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fcf822a2-70a0-4a13-ab1c-a1f19755aba7" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/french_points.csv" afterPath="$PROJECT_DIR$/Data/french_points.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Python/makeData.py" afterPath="$PROJECT_DIR$/Python/makeData.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/js/main.js" afterPath="$PROJECT_DIR$/main/assets/js/main.js" />
     </list>
     <ignored path="wooden_ships.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -31,8 +29,8 @@
       <file leaf-file-name="makeData.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Python/makeData.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.81920904" vertical-offset="180" max-vertical-offset="930">
-              <caret line="41" column="94" selection-start-line="41" selection-start-column="94" selection-end-line="41" selection-end-column="94" />
+            <state vertical-scroll-proportion="0.2259887" vertical-offset="180" max-vertical-offset="930">
+              <caret line="20" column="75" selection-start-line="20" selection-start-column="65" selection-end-line="20" selection-end-column="75" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -292,8 +290,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Python/makeData.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.81920904" vertical-offset="180" max-vertical-offset="930">
-          <caret line="41" column="94" selection-start-line="41" selection-start-column="94" selection-end-line="41" selection-end-column="94" />
+        <state vertical-scroll-proportion="0.2259887" vertical-offset="180" max-vertical-offset="930">
+          <caret line="20" column="75" selection-start-line="20" selection-start-column="65" selection-end-line="20" selection-end-column="75" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
