@@ -299,9 +299,20 @@ function displayShipDataHexes(datasetArray){
     	.attr('class', 'hexagon')
       .attr("d", globals.map.hexbin.hexagon())
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-      //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
-      .attr("fill", 'green')
-      .attr('stroke', 'orange').style('stroke-width', 0.25)
+      .style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); })
+      //.attr("fill", 'green')
+      .attr('stroke', 'orange')
+      .style('stroke-width', 0.25)
+      .on('click', function(d){
+      	memos = filterToHexBin(globals.data.memos, d)
+      	console.log(memos)
+      })
+      .on('mouseover', function(d){
+      	d3.select(this).style({'stroke': 'white', "stroke-width": 2})
+      })
+      .on('mouseout', function(d){
+      	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
+      })
 }
 
 function getPorts(filter, callback){        
@@ -430,6 +441,132 @@ function loadShipLookup(){
 		globals.data.shipLookup = data;
 	});
 
+}
+
+
+///memo filtering functions
+function filterToBiology(memoSet){
+	//returns a an array of memos with only memos reporting biology included
+	o = _.where(memoSet, {memoType: "Biology"})
+	return o
+}
+function filterToShipAndRig(memoSet){
+	//returns an array of memos with only those reportingon the ship's condition included
+	o= _.where(memoSet, {memoType: "shipAndRig"})
+	return o
+}
+function filterToWindForce(memoSet){
+	//returns an array of memos with only those reporting on the wind force included
+	o = _.where(memoSet, {memoType: "windForce"})
+	return o
+}
+function filterToCurrentSpeed(memoSet){
+	//returns an array of memos with only those reporting on the current travel speed included
+	o = _.where(memoSet, {memoType: "currentTravelSpeed"});
+	return o;
+}
+function filterToSeaState(memoSet){
+	//returns an array of memos with only those reporting on the state of the sea included
+	o = _.where(memoSet, {memoType: "stateOfSea"});
+	return o
+}
+function filterToClearness(memoSet){
+	//returns an array of memos with only those reporting on the currently clearness reported
+	o =_.where(memoSet, {memoType: "clearness"});
+	return o
+}
+function filterToCloudFraction(memoSet){
+	//returns an array of memos with only those reporting on cloud fraction reported
+	o = _.where(memoSet, {memoType: "cloudFraction"})
+	return o
+}
+function filterToWindDirection(memoSet){
+	//returns an array of memoswith only those reporting on wind direction included
+	o = _.where(memoSet, {memoType: "windDirection"});
+	return o
+}
+function filterToCurrentTravelDirection(memoSet){
+	//returns an array of memos with only those reporting on current travel direction included
+	o = _.where(memoSet, {memoType: "currentTravelDirection"})
+	return o
+}
+function filterToAnchored(memoSet){
+	//returns an array of memos with only those that note that the ships is anchored included
+	o = _.where(memoSet, {memoType: "anchored", memoText: "True"})
+	return o
+}
+function filterToAllWindForces(memoSet){
+	//returns an array of memos with only those that report on the day's wind directions included
+	o = _.where(memoSet, {memoType: "allWindForces"});
+	return o
+}
+function filterToGenObs(memoSet){
+	///returns an array of memos with only those that report on the day's general observations included
+	o= _.where(memoSet, {memoType: "generalObservations"})
+	return o
+}
+function filterToCloudShape(memoSet){
+	//returns an array of memos with only those that report on the cloud's shapes included
+	o = _.where(memoSet, {memoType: "shapeOfClouds"})
+	return o
+}
+function filterToCloudDirection(memoSet){
+	//returns an array of memos with only those that report on the cloud's directions included
+	o = _.where(memoSet, {memoType: "directionOfClouds"})
+	return o
+}
+function filterToCargo(memoSet){
+	//returns an array of memos with only those that report on the ships cargo included
+	o = _.where(memoSet, {memoType: "cargo"})
+	return o
+}
+function filterToWarsAndFights(memoSet){
+	//returns an array of memos with only those that report on the conflicts on board included
+	o = _.where(memoSet, {memoType: "warsAndFights"});
+	return o
+}
+function filterToAllWindDirections(memoSet){
+	//returns an array of memos with only those that report on the day's wind directions incldued
+	o = _.where(memoSet, {memoType: "allWindDirections"})
+	return o
+}
+function filterToLifeOnBoard(memoSet){
+	///returns an array of memos with only those that report on life on board included
+	o= _.where(memoSet, {memoType: "lifeOnBoard"})
+	return o
+}
+function filterToVoyageID(memoSet, voyageID){
+	//returns an array of memos all belonging to the same voyage
+	o= _.where(memoSet, {voyageID: String(voyageID)});
+	return o
+}
+function filterToLocationID(memoSet, locationID){
+	//returns an array of memos all belonging to the same location
+	o= _.where(memoSet, {locationID: String(locationID)})
+	return o
+}
+function filterToTimeRange(memoText, temporalFilter){
+	//returns an array of memos whose dates fall between a min and amax specified value
+	//temporal filter should be like {minDate: [date], maxDate: [date]}
+	o = _.filter(memoSet, function(d){
+		return (d.date > temporalFilter.minDate && d.date < temporalFilter.maxDate)
+	})
+}
+
+function filterToHexBin(memoSet, hexbin){
+	//returns an array of memos for a hex bin
+	locs = []
+	for (i in hexbin){
+		v = hexbin[i]
+		if (typeof v == 'object'){//hexbins have other properties that arent the location points
+			locationID = String(v['locationID'])
+			locs.push(locationID);
+		}
+	}
+	o = _.filter(memoSet, function(d){
+		return (locs.indexOf(String(d.locationID)) != -1)
+	})
+	return o
 }
 
 
