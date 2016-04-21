@@ -45,18 +45,34 @@ var zoom = d3.behavior.zoom()
     .scale(scale0)
     .scaleExtent([scale0, 8 * scale0])
     .on("zoom", zoomed);
+    
+
+
+//change the stacking order of d3 elements
+// https://github.com/wbkd/d3-extended
+d3.selection.prototype.moveToFront = function() {  
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
+d3.selection.prototype.moveToBack = function() {  
+    return this.each(function() { 
+        var firstChild = this.parentNode.firstChild; 
+        if (firstChild) { 
+            this.parentNode.insertBefore(this, firstChild); 
+        } 
+    });
+};
 
 
 
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
-	getShipData(displayShipDataHexes) //get the ship data 
-	//createDropdown(attrArray); //creates the dropdown menu for years/basemap
-	//projDropdown(attrProj) //creates the dropdown menu for projection
 	
-	//open the modal dialog --> splash screen
-	//$("#splashModal").modal('show')
+	changeCountry("British")
+	
+	loadShipLookup() // get metadata about ships and voyages and captains
 })
 
 
@@ -125,14 +141,9 @@ function setMap(){
 function zoomed() {
     // mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     // mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
-   console.log("Zoomed")
-    globals.map.projection
-      .translate(zoom.translate())
-      .scale(zoom.scale());
-
-  globals.map.mapContainer.selectAll("path")
-      .attr("d", globals.map.path);
-  changeHexSize(globals.map.hexRadius)
+    console.log("Zoomed")
+  //globals.map.mapContainer.selectAll(".hexagon").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  
 };
 	
 	
@@ -253,9 +264,8 @@ function changeProjection(projection, scale, center){
 // 
 // $("#loading").hide()
 
-function getShipData(callback){
-	d3.csv("assets/data/british_points.csv", function(data){
-		console.log(data)
+function getShipData(filename, callback){
+	d3.csv(filename, function(data){
 		_.each(data, function(d){
 			d.airTemp = +d.airTemp;
 			d.pressure = +d.pressure
@@ -358,6 +368,69 @@ $( "#hexSlider" ).slider({
 	}
 });
 //control hex bin size
+
+function processMemos(memos){
+	_.each(memos, function(d){
+		d['Latitude'] = Number(d['Latitude'])
+		d['Longitude'] = Number(d['Longitude'])
+		q = d['obsDate']
+		d['date'] = new Date(q)
+	})
+	globals.data.memos = memos
+	console.log("Done loading memos")
+}
+
+function changeCountry(countryName){
+	//changes the map interface to reflect a new country's data.  Options are 'Dutch', 'French', 'British', 'Spanish'
+	//load in new data
+	
+	
+	if (countryName == "British"){
+		f = "/assets/data/british_points.csv"
+		d3.csv("/assets/data/british_memos.csv", function(data){
+			processMemos(data)
+		})
+	}
+	else if (countryName == "Dutch"){
+		f = "/assets/data/dutch_points.csv"
+		d3.csv("/assets/data/dutch_memos.csv", function(data){
+			processMemos(data)
+		})
+	}
+	else if (countryName == "Spanish"){
+		f = "/assets/data/spanish_points.csv"
+		d3.csv("/assets/data/spanish_memos.csv", function(data){
+			processMemos(data)
+		})
+	}
+	else if (countryName == "French"){
+		f = "/assets/data/french_points.csv"
+		d3.csv("/assets/data/french_memos.csv", function(data){
+			processMemos(data)
+		})
+	}
+	else{
+		console.log("Invalid country name.")
+		return
+	}
+	d3_queue.queue()
+		.defer(getShipData, f)
+		.await(refreshHexes)
+}
+
+function refreshHexes(){
+	removeHexes()
+	displayShipDataHexes(globals.data.ships)
+	console.log("Refreshed hexes.")
+}
+
+function loadShipLookup(){
+	//laods metadata about ships and voyages from the disk
+	d3.csv("/assets/data/ship_lookup.csv",function(data){
+		globals.data.shipLookup = data;
+	});
+
+}
 
 
 
