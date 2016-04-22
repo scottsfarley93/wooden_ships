@@ -69,6 +69,7 @@ d3.selection.prototype.moveToBack = function() {
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
+	getPorts();//get the port cities and display them
 	changeCountry("British")
 	loadShipLookup() // get metadata about ships and voyages and captains
 })
@@ -263,47 +264,51 @@ function displayShipDataHexes(datasetArray){
       .on('mouseout', function(d){
       	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
       })
-      //put the countries in front of the hexagons
+      //set the stack order
       globals.land.moveToFront();
+      globals.ports.moveToFront();
 }
 
-function getPorts(filter, callback){        
-	  d3_queue.queue()
-	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php", {geocode: true, modernName: true})
-	  	.defer(d3.json, "http://grad.geography.wisc.edu/sfarley2/voyageStarts.php", {geocode: true, modernName: true})
-	  	.await(uniquePorts)
+function getPorts(){        
+	//load the port cities from a csv file on disk
+	  d3.csv("/assets/data/port_cities.csv", function(data){
+	  	globals.data.ports = data;
+	  	displayPorts(data);
+	  })
 }
 
-function uniquePorts(){
-	//combine the two parts arrays so that we have only one array of geocoded ports
-	bigArray = globals.data.voyageStarts.concat(voyage.data.voyageEnds);
-	globals.data.ports = _.uniq(bigArray, function(d){
-		return d.place;
-	})
-}
-
-function getLogbookRecord(locationID, callback){
-	$.ajax("http://grad.geography.wisc.edu/sfarley2/data.php",{
-		beforeSend: function(){
-			console.log("Getting logbook data from: " + this.url)
-		},
-		data: {
-			locationID: locationID
-		},
-		dataType:"jsonp",
-		success: function(response){
-			console.log(response['data'][0]);
-			if(callback){
-				callback(response);
-			}
-			changeHexSize(globals.map.hexRadius)
-		},
+function displayPorts(portData){
+	globals.ports = globals.map.features.selectAll(".port")
+		.data(portData)
+		.enter().append('g')
 		
-		error: function(xhr, status, error){
-			console.log("ERROR: " + error)
-		}
-	})
+	globals.ports
+		.append("circle")
+		.attr("cx", function(d){
+			projx = globals.map.projection([d.Longitude, d.Latitude])[0]
+			return projx
+		})
+		.attr("cy", function(d){
+			projy = globals.map.projection([d.Longitude, d.Latitude])[1]
+			return projy
+		})
+		.attr('r', 5)
+		.style('fill', 'black')
+		.style('stroke', 'black')
+		
+	globals.ports
+		.append('text')
+			.attr('x', function(d){return globals.map.projection([d.Longitude, d.Latitude])[0] + 10})
+			.attr('y', function(d){return globals.map.projection([d.Longitude, d.Latitude])[1] + 10})
+			.text(function(d){
+				return d.OriginalName
+			})
+			.style('color', 'white')
+		
 }
+
+
+
 
 function removeHexes(){
 	d3.selectAll(".hexagons").transition(100).remove()
