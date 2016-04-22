@@ -1,7 +1,7 @@
 .land {
     fill:   #d7c7ad;
  	stroke: #a5967e;
-    stroke-width: 2px;
+    stroke-width: 1px;
 }
 
 .mapContainer{
@@ -46,7 +46,7 @@ html, body{
 }
 
 .overlay{
-  fill: none;
+  fill: red;
   pointer-events: all;
   cursor:hand;
 }

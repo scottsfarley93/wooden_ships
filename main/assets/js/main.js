@@ -43,7 +43,7 @@ parseDate = d3.time.format("%x").parse;
 var zoom = d3.behavior.zoom()
     .translate([0, 0])
     .scale(1)
-    .scaleExtent([1, 8])
+    .scaleExtent([1, 12])
     .on("zoom", zoomed);
     
 
@@ -93,11 +93,12 @@ function setMap(){
 	        
 	    globals.map.features = globals.map.mapContainer.append("g"); //this facilitates the zoom overlay
 
-		globals.map.mapContainer.append("rect")//this is the zoom overlay
+		globals.map.features.append("rect")//this is the zoom overlay -->THIS IS WHERE THE PROBLEM IS --> LAYER STACK IS AN ISSUE
 		    .attr("class", "overlay")
 		    .attr("width", globals.map.dimensions.width)
 		    .attr("height", globals.map.dimensions.height)
-		    .call(zoom).call(zoom.event); //call the zoom on this element
+		    .call(zoom).call(zoom.event)
+		    //.moveToBack(); //call the zoom on this element
 		    
 		    
 	        //translate europe TopoJSON
@@ -122,20 +123,14 @@ function setMap(){
 	            .attr("class", "land")
 	            //.style("stroke", "black").style("fill", "blue"); 
 	         
-	         changeProjection("VDG");
-	     
-	      
-	    	
+	         changeProjection("Mercator");
 	}; //end of callback
 };//end of set map
 
 function zoomed() {
-  globals.map.features.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  //globals.map.mapContainer.select(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
- // globals.map.mapContainer.select(".hexagon").style("stroke-width", .5 / d3.event.scale + "px");
-    console.log("Zoomed")
-  //globals.map.mapContainer.selectAll(".hexagon").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  
+	evt = d3.event
+	globals.map.features.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	//additional hex styling can go here
 };
 	
 	
@@ -260,13 +255,16 @@ function displayShipDataHexes(datasetArray){
       	console.log(memos)
       })
       .on('mouseover', function(d){
-      	d3.select(this).style({'stroke': 'white', "stroke-width": 2})
+      	d3.select(this).moveToFront()
+      	d3.select(this).style({'stroke': 'white', "stroke-width": 1})
       	memos = filterToHexBin(globals.data.memos, d)
       	displayMemos(memos)
       })
       .on('mouseout', function(d){
       	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
       })
+      //put the countries in front of the hexagons
+      globals.land.moveToFront();
 }
 
 function getPorts(filter, callback){        
