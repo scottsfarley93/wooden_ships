@@ -24,7 +24,7 @@ if not remoteConn:
     exit()
 print "Connected."
 
-out = open("/users/scottsfarley/documents/wooden_ships/main/assets/data/british_memos.csv", 'w')
+out = open("/users/scottsfarley/documents/wooden_ships/main/assets/data/ship_lookup.csv", 'w')
 writer = csv.writer(out, lineterminator="\n")
 header = []
 
@@ -41,26 +41,26 @@ header = []
 # sql = "SELECT portname, latitude, longitude, modernName from voyages inner join ports on voyages.fromPlace = ports.portname WHERE latitude is NOT NULL and longitude is not null; SELECT portname, latitude, longitude, modernname from voyages " \
 #       "inner join ports on voyages.toPlace=ports.portname where latitude is not null and longitude is not null;"
 
-header = ["observationID", "locationID", "Latitude", "Longitude", "obsDate", "voyageID", "memoType", "memoText"]
-sql = "SELECT obsid, locations.locationid, locations.latitude, locations.longitude, locations.date, locations.voyageid, memoType, memoText  " \
-      "FROM observations " \
-      "INNER JOIN locations on locations.locationid=observations.locationid " \
-      "INNER JOIN voyages on voyages.voyageid=locations.voyageid " \
-      "INNER JOIN nations on nations.nationid=voyages.nationid " \
-      "WHERE memoType !='recordID' AND memoType != 'obsLanguage' AND nations.nationality='British' " \
-      "" \
-      ";"
-
-
+# header = ["observationID", "locationID", "Latitude", "Longitude", "obsDate", "voyageID", "memoType", "memoText"]
+# sql = "SELECT obsid, locations.locationid, locations.latitude, locations.longitude, locations.date, locations.voyageid, memoType, memoText  " \
+#       "FROM observations " \
+#       "INNER JOIN locations on locations.locationid=observations.locationid " \
+#       "INNER JOIN voyages on voyages.voyageid=locations.voyageid " \
+#       "INNER JOIN nations on nations.nationid=voyages.nationid " \
+#       "WHERE memoType !='recordID' AND memoType != 'obsLanguage' AND nations.nationality='British' " \
+#       "" \
+#       ";"
+#
 #
 # #
-# header = ["voyageID", "captainName", "fromPlace", "toPlace", "voyageStartDate", "nationality", "shipName"]
-# sql = "SELECT voyages.voyageID, captains.captainName, voyages.fromPlace, voyages.toPlace, voyages.startdate, nations.nationality, ships.shipName," \
-#       "ships.shipType, companies.companyName from voyages " \
-#       "INNER JOIN ships on ships.shipid=voyages.shipid " \
-#       "INNER JOIN companies on companies.companyid=voyages.companyid " \
-#       "INNER JOIN nations on nations.nationid=voyages.nationid " \
-#       "INNER JOIN captains on captains.captainid=voyages.captainid ;"
+# #
+header = ["voyageID", "captainName", "rank", "fromPlace", "toPlace", "voyageStartDate", "nationality", "shipName", "shipType", "companyName"]
+sql = "SELECT voyages.voyageID, captains.captainName, rank, voyages.fromPlace, voyages.toPlace, voyages.startdate, nations.nationality, ships.shipName," \
+      "ships.shipType, companies.companyName from voyages " \
+      "INNER JOIN ships on ships.shipid=voyages.shipid " \
+      "INNER JOIN companies on companies.companyid=voyages.companyid " \
+      "INNER JOIN nations on nations.nationid=voyages.nationid " \
+      "INNER JOIN captains on captains.captainid=voyages.captainid ;"
 
 writer.writerow(header)
 

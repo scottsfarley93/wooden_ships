@@ -11,6 +11,9 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 	
       <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+      <link href='https://fonts.googleapis.com/css?family=Shadows+Into+Light' rel='stylesheet' type='text/css'>
+      <link rel='stylesheet' href='assets/css/tether.min.css'>
+      <link rel='stylesheet' href='assets/css/drop-theme-twipsy.min.css'>
    
 
 	<!--put your external stylesheet links here-->
@@ -20,10 +23,44 @@
 <body>
 	
 	<h2>Wooden Ships</h2>
-	<div id='controls' class='row'>
-		<label>Adjust Hex Size</label><div id="hexSlider"></div>
-	</div> <!-- dropdowns go here-->
-	<div id='map' class='row'></div><!-- map go here-->
+	<div class='row' id='mainContainer'>
+		<div id='controls' class='col-xs-2'>
+			<label>Adjust Hex Size</label><div id="hexSlider"></div>
+			<ul>
+				<li>
+					Control
+				</li>
+				<li>
+					Control
+				</li>
+				<li>
+					Control
+				</li>
+				<li>
+					Control
+				</li>
+				<li>
+					Control
+				</li>
+				
+			</ul>
+			<h4>Projection</h4>
+			<label>
+				<input type='radio' name='projSelect' value='Mercator' class='projSelect'><label>Mercator</label><br />
+				<input type='radio' name='projSelect' value="VDG" class='projSelect' checked><label>Van der Grinten IV</label>
+			</label>
+		</div> 
+		<div id='map' class='col-xs-6'>
+			<!-- map go here-->
+		</div>
+		<div  id='feed-window'>
+			<ul class='list-group' id='feed'>
+				
+			</ul>
+		</div>
+	</div>
+
+	
 	
 	
 	
@@ -67,7 +104,10 @@
 	<script type="text/javascript" src="assets/lib/d3.geo.projection.min.js"></script>
 	<script type="text/javascript" src="assets/lib/underscore-min.js"></script>
 	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
 	<script src="assets/lib/hexbin.min.js"></script>
+	<script src='assets/lib/tether.min.js'></script>
+	<script src='assets/lib/drop.min.js'></script>
 	
 
 	<!--My Script-->

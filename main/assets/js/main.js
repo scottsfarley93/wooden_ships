@@ -41,9 +41,9 @@ var color = d3.scale.linear()
 parseDate = d3.time.format("%x").parse;
 
 var zoom = d3.behavior.zoom()
-    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
-    .scale(scale0)
-    .scaleExtent([scale0, 8 * scale0])
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 8])
     .on("zoom", zoomed);
     
 
@@ -69,33 +69,13 @@ d3.selection.prototype.moveToBack = function() {
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
-	
 	changeCountry("British")
-	
 	loadShipLookup() // get metadata about ships and voyages and captains
 })
 
 
 //set up map and call data
-function setMap(){
-
-	    //create new svg container for the map
-	    globals.map.mapContainer = mapContainer = d3.select("#map")
-	        .append("svg")
-	        .attr("class", "mapContainer")
-	        .attr("width", globals.map.dimensions.width)
-	        .attr("height",  globals.map.dimensions.width);
-	        
-	        
-	    globals.map.g = globals.map.mapContainer.append("g");
-
-		globals.map.mapContainer.append("rect")
-		    .attr("class", "overlay")
-		    .attr("width", globals.map.dimensions.width)
-		    .attr("height", globals.map.dimensions.height);
-		
-		
-	        
+function setMap(){	        
 	    //use queue.js to parallelize asynchronous data loading
 	    d3_queue.queue()
 	        .defer(d3.json, "assets/data/land.topojson") //load base map data
@@ -103,9 +83,23 @@ function setMap(){
 	        
 		function callback(error, base, overlay1, overlay2, overlay3){
 			//happens once the ajax have returned
-	        console.log(error);
-	        console.log(base);
+	        	    //create new svg container for the map
+	    globals.map.mapContainer = mapContainer = d3.select("#map")
+	        .append("svg")
+	        .attr("class", "mapContainer")
+	        .attr("width", globals.map.dimensions.width)
+	        .attr("height",  globals.map.dimensions.width);
 	        
+	        
+	    globals.map.features = globals.map.mapContainer.append("g"); //this facilitates the zoom overlay
+
+		globals.map.mapContainer.append("rect")//this is the zoom overlay
+		    .attr("class", "overlay")
+		    .attr("width", globals.map.dimensions.width)
+		    .attr("height", globals.map.dimensions.height)
+		    .call(zoom).call(zoom.event); //call the zoom on this element
+		    
+		    
 	        //translate europe TopoJSON
 	        var landBase = topojson.feature(base, base.objects.ne_110m_land).features
 	         
@@ -121,26 +115,24 @@ function setMap(){
 	    		return d.projected[1]
 	    	})
 	         
-	         globals.land = globals.map.mapContainer.selectAll(".land")
+	         globals.land = globals.map.features.selectAll(".land")
 	            .data(landBase)
 	            .enter()
 	            .append("path")
 	            .attr("class", "land")
 	            //.style("stroke", "black").style("fill", "blue"); 
-
-	        console.log(globals.land)
 	         
 	         changeProjection("VDG");
 	     
-	     globals.map.mapContainer.call(zoom).call(zoom.event)
 	      
 	    	
 	}; //end of callback
 };//end of set map
 
 function zoomed() {
-    // mapContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    // mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
+  globals.map.features.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  //globals.map.mapContainer.select(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
+ // globals.map.mapContainer.select(".hexagon").style("stroke-width", .5 / d3.event.scale + "px");
     console.log("Zoomed")
   //globals.map.mapContainer.selectAll(".hexagon").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   
@@ -192,7 +184,7 @@ function changeProjection(projection, scale, center){
    	 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
     		.precision(.1);
     }
-    else if (projection == "mercator"){
+    else if (projection == "Mercator"){
     	var projection = d3.geo.mercator()
     		.scale((globals.map.dimensions.width + 1) / 2 / Math.PI)
     		.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
@@ -207,6 +199,9 @@ function changeProjection(projection, scale, center){
 		    .tilt(25)
 		    .clipAngle(Math.acos(1 / 1.1) * 180 / Math.PI - 1e-6)
 		    .precision(.1);
+    }else{
+    	console.log("Projection not supported.")
+    	return
     }
    var path = d3.geo.path()
     .projection(projection);
@@ -214,55 +209,12 @@ function changeProjection(projection, scale, center){
    globals.map.projection = projection;
    globals.map.path = path;
    //do the update
-   globals.land.transition().attr('d', path)
+   globals.land.transition().attr('d', path) //this causes an invalid path????
    
    //update the hexagons
    changeHexSize(globals.map.hexRadius)
 };
 
-// function getShipsData(filter, callback){
-	// var t1, t2
-	// $.ajax("http://grad.geography.wisc.edu/sfarley2/data.php", {
-		// beforeSend: function(){
-			// t1 = new Date().getTime();
-			// console.log("Getting ships from: " + this.url)
-			// $("#loading").show();
-			// $("#nation-select-list").hide();
-		// },
-		// error: function(xhr, status, error){
-			// console.log("ERROR: " + error);
-		// },
-		// data: filter,//this is an object with API parameters
-		// dataType: "jsonp",//so we can reach an external server
-		// success: function(response){
-			// t2 = new Date().getTime();
-			// console.log("Got response from ships server.");
-			// globals.data.ships = response['data'];
-			// console.log("Roundtrip to server took " + ((t2-t1)/1000) + " seconds.")
-			// $("#")
-			// //now we can do any callback we want
-			// if (callback){
-				// callback(response);
-			// }
-			// $("#splashModal").modal('hide')
-			// $("#loading").hide();
-		// }
-	// })
-// }
-// //event listener for nation select
-// 
-// $(".nation-select").click(function(){
-	// //load ships on button click
-	// var nation = $(this).text();
-	// //load ships data with this nation
-	// filter = {
-		// nationality: nation
-	// };
-	// getShipsData(filter);
-// })
-// 
-// 
-// $("#loading").hide()
 
 function getShipData(filename, callback){
 	d3.csv(filename, function(data){
@@ -291,7 +243,7 @@ function displayShipDataHexes(datasetArray){
 		d['projected'] = p
 		//d.date = parseDate(d.date);
 	})
-	 globals.map.hexagons = globals.map.mapContainer.append("g")
+	 globals.map.hexagons = globals.map.features.append("g")
       .attr("class", "hexagons")
     .selectAll(".hexagons")
       .data(globals.map.hexbin(datasetArray))
@@ -309,6 +261,8 @@ function displayShipDataHexes(datasetArray){
       })
       .on('mouseover', function(d){
       	d3.select(this).style({'stroke': 'white', "stroke-width": 2})
+      	memos = filterToHexBin(globals.data.memos, d)
+      	displayMemos(memos)
       })
       .on('mouseout', function(d){
       	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
@@ -398,25 +352,25 @@ function changeCountry(countryName){
 	
 	if (countryName == "British"){
 		f = "/assets/data/british_points.csv"
-		d3.csv("/assets/data/british_memos.csv", function(data){
+		d3.csv("/assets/data/british_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "Dutch"){
 		f = "/assets/data/dutch_points.csv"
-		d3.csv("/assets/data/dutch_memos.csv", function(data){
+		d3.csv("/assets/data/dutch_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "Spanish"){
 		f = "/assets/data/spanish_points.csv"
-		d3.csv("/assets/data/spanish_memos.csv", function(data){
+		d3.csv("/assets/data/spanish_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "French"){
 		f = "/assets/data/french_points.csv"
-		d3.csv("/assets/data/french_memos.csv", function(data){
+		d3.csv("/assets/data/french_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
@@ -430,6 +384,7 @@ function changeCountry(countryName){
 }
 
 function refreshHexes(){
+	console.log("Loaded ship data.")
 	removeHexes()
 	displayShipDataHexes(globals.data.ships)
 	console.log("Refreshed hexes.")
@@ -455,64 +410,15 @@ function filterToShipAndRig(memoSet){
 	o= _.where(memoSet, {memoType: "shipAndRig"})
 	return o
 }
-function filterToWindForce(memoSet){
-	//returns an array of memos with only those reporting on the wind force included
-	o = _.where(memoSet, {memoType: "windForce"})
-	return o
-}
-function filterToCurrentSpeed(memoSet){
-	//returns an array of memos with only those reporting on the current travel speed included
-	o = _.where(memoSet, {memoType: "currentTravelSpeed"});
-	return o;
-}
-function filterToSeaState(memoSet){
-	//returns an array of memos with only those reporting on the state of the sea included
-	o = _.where(memoSet, {memoType: "stateOfSea"});
-	return o
-}
-function filterToClearness(memoSet){
-	//returns an array of memos with only those reporting on the currently clearness reported
-	o =_.where(memoSet, {memoType: "clearness"});
-	return o
-}
-function filterToCloudFraction(memoSet){
-	//returns an array of memos with only those reporting on cloud fraction reported
-	o = _.where(memoSet, {memoType: "cloudFraction"})
-	return o
-}
-function filterToWindDirection(memoSet){
-	//returns an array of memoswith only those reporting on wind direction included
-	o = _.where(memoSet, {memoType: "windDirection"});
-	return o
-}
-function filterToCurrentTravelDirection(memoSet){
-	//returns an array of memos with only those reporting on current travel direction included
-	o = _.where(memoSet, {memoType: "currentTravelDirection"})
-	return o
-}
 function filterToAnchored(memoSet){
 	//returns an array of memos with only those that note that the ships is anchored included
 	o = _.where(memoSet, {memoType: "anchored", memoText: "True"})
 	return o
 }
-function filterToAllWindForces(memoSet){
-	//returns an array of memos with only those that report on the day's wind directions included
-	o = _.where(memoSet, {memoType: "allWindForces"});
-	return o
-}
+
 function filterToGenObs(memoSet){
 	///returns an array of memos with only those that report on the day's general observations included
 	o= _.where(memoSet, {memoType: "generalObservations"})
-	return o
-}
-function filterToCloudShape(memoSet){
-	//returns an array of memos with only those that report on the cloud's shapes included
-	o = _.where(memoSet, {memoType: "shapeOfClouds"})
-	return o
-}
-function filterToCloudDirection(memoSet){
-	//returns an array of memos with only those that report on the cloud's directions included
-	o = _.where(memoSet, {memoType: "directionOfClouds"})
 	return o
 }
 function filterToCargo(memoSet){
@@ -523,11 +429,6 @@ function filterToCargo(memoSet){
 function filterToWarsAndFights(memoSet){
 	//returns an array of memos with only those that report on the conflicts on board included
 	o = _.where(memoSet, {memoType: "warsAndFights"});
-	return o
-}
-function filterToAllWindDirections(memoSet){
-	//returns an array of memos with only those that report on the day's wind directions incldued
-	o = _.where(memoSet, {memoType: "allWindDirections"})
 	return o
 }
 function filterToLifeOnBoard(memoSet){
@@ -569,5 +470,93 @@ function filterToHexBin(memoSet, hexbin){
 	return o
 }
 
+//change projection on widget change
+$(".projSelect").change(function(){
+	proj = $(this).val()
+	changeProjection(proj)
+})
 
+function displayMemos(memoSet){
+	//displays the feed of observations in the right hand panel
+	$("#feed").empty();
+	for (item in memoSet){
+		memo = memoSet[item]
+		text = memo.memoText;
+		latitude = memo.Latitude
+		longitude = memo.Longitude
+		date = moment(memo.date)
+		meta = lookupVoyageID(memo['voyageID'])
+		captain = meta['captainName']
+		captainRank = meta['rank']
+		fromPlace = meta['fromPlace']
+		toPlace = meta['toPlace']
+		shipName = meta['shipName']
+		shipType = meta['shipType']
+		nationality = meta['nationality']
+		voyageStart = moment(meta['voyageStartDate'])
+		var duration = moment.duration(date.diff(voyageStart));
+		var daysSinceStart = Math.round(duration.asDays());
+		if (daysSinceStart < 0){
+			return
+		}
+		html = "<li class='list-group-item'>"
+		html += "<h6>" + captainRank + " " + captain + "</h6><span class='text-muted'><i>" + shipName + "</i>" + "</span><br />"
+		html += "<p class='log-entry'>" + text + "</p>"
+		html += "</li>"
+		$("#feed").append(html)
+	}
+}
 
+//lookup functions
+function lookupCaptainInfo(captainName){
+	//returns an array of voyage objects that have the given captain
+	o = _.where(globals.data.shipLookup, {
+		captainName: captainName
+	})
+	return o
+}
+function lookupVoyageFrom(fromPlace){
+	//returns an array of voyages that started at the given place
+	o = _.which(globals.data.shipLookup, {
+		where: fromPlace
+	})
+	return o
+}
+
+function lookupVoyageTo(toPlace){
+	//returns an array of voyages that end at the given place
+	o = _.where(globals.data.shipLookup, {
+		toPlace: toPlace
+	})
+	return o
+}
+function lookupShipName(shipName){
+	//returns an array of voyages taken by a given ship
+	o = _.where(globals.data.shipLookup, {
+		shipName: shipName
+	})
+	return o
+}
+function lookupCompany(company){
+	//returns an array of voyages made by ships of a given company
+	o = _.where(globals.data.shipLookup,{
+		companyName: company
+	})
+	return o
+}
+function lookupShipType(shipType){
+	//returns an array of voyages made by ships of a given type
+	o = _.where(globals.data.shipLookup, {
+		shipType: shipType
+	})
+	return o
+}
+
+function lookupVoyageID(voyageID){
+	//returns voyage metadata matching the given voyageID --> should only be one
+	o = _.where(globals.data.shipLookup, {
+		voyageID: voyageID
+	});
+	return o[0]
+	
+}
