@@ -46,7 +46,7 @@ html, body{
 }
 
 .overlay{
-  fill: red;
+  fill: none;
   pointer-events: all;
   cursor:hand;
 }
@@ -58,7 +58,7 @@ html, body{
 	right: 0px;
 	position: absolute;
 	top: 0px;
-	width: 10px;
+	width: 300px;
 	height: 100%!important;
 	max-height: 100%!important;
 	min-height: 100%!important;
@@ -66,4 +66,27 @@ html, body{
 }
 .log-entry{
 	font-family: 'Shadows Into Light', cursive !important;
+}
+.log{
+	width: 100%;
+	cursor:hand;
+}
+.captain-thumb{
+	margin: 0px;
+	padding: 0px;
+}
+.captain-heading, .log-shipname, .log-date{
+	margin: 0px;
+	padding:0px;
+	
+}
+.log-header{
+	margin: 0px;
+	padding: 0px;
+}
+.popover{
+	z-index: 10000;
+}
+.basic-content, .basic-hovercard, .hover-card-details{
+	z-index: 100001;
 }

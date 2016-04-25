@@ -5,6 +5,9 @@ var attrArray = ["countries_1715", "countries_1783", "countries_1815"];
 
 var expressed = attrArray[0]
 
+var months = moment.months()
+var weekdays = moment.weekdays()
+
 var attrProj = ["VDG", "Mercator", "sat"]; // list of projections
 
 globals = {}
@@ -16,6 +19,8 @@ globals.map.dimensions.width = $(window).width() //100% of the window width
 globals.map.projection;
 globals.map.path;
 
+globals.mamoType = "All"
+
 globals.data = {};
 globals.data.filteredShips = []; //keep track of the currently applied filter
 
@@ -24,6 +29,7 @@ globals.map.hexRadius = 1;
 scale0 = (globals.map.dimensions.width - 1) / 2 / Math.PI;
 
 globals.filter = {} //keep track of the currently applied filter
+
 
 var radius = d3.scale.sqrt()
     .domain([0, 12])
@@ -69,9 +75,11 @@ d3.selection.prototype.moveToBack = function() {
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
+	loadCaptainMetadata() //loads images and datas about the captains
 	getPorts();//get the port cities and display them
 	changeCountry("British")
 	loadShipLookup() // get metadata about ships and voyages and captains
+	d3.selectAll(".overlay").style('display', 'none')//disables zoom --> for debugging
 })
 
 
@@ -94,11 +102,11 @@ function setMap(){
 	        
 	    globals.map.features = globals.map.mapContainer.append("g"); //this facilitates the zoom overlay
 
-		globals.map.features.append("rect")//this is the zoom overlay -->THIS IS WHERE THE PROBLEM IS --> LAYER STACK IS AN ISSUE
-		    .attr("class", "overlay")
-		    .attr("width", globals.map.dimensions.width)
-		    .attr("height", globals.map.dimensions.height)
-		    .call(zoom).call(zoom.event)
+		// globals.map.mapContainer.append("rect")//this is the zoom overlay -->THIS IS WHERE THE PROBLEM IS --> LAYER STACK IS AN ISSUE
+		    // .attr("class", "overlay")
+		    // .attr("width", globals.map.dimensions.width)
+		    // .attr("height", globals.map.dimensions.height)
+		 globals.map.mapContainer.call(zoom).call(zoom.event)
 		    //.moveToBack(); //call the zoom on this element
 		    
 		    
@@ -130,7 +138,10 @@ function setMap(){
 
 function zoomed() {
 	evt = d3.event
-	globals.map.features.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	d3.selectAll(".land").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	d3.selectAll(".hexagons").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	d3.selectAll(".port").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+	//d3.selectAll(".hexagon").moveToFront();
 	//additional hex styling can go here
 };
 	
@@ -240,25 +251,26 @@ function displayShipDataHexes(datasetArray){
 		//d.date = parseDate(d.date);
 	})
 	 globals.map.hexagons = globals.map.features.append("g")
-      .attr("class", "hexagons")
-    .selectAll(".hexagons")
-      .data(globals.map.hexbin(datasetArray))
-    .enter().append("path")
-    	.attr('class', 'hexagon')
-      .attr("d", globals.map.hexbin.hexagon())
-      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-      .style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); })
-      //.attr("fill", 'green')
-      .attr('stroke', 'orange')
-      .style('stroke-width', 0.25)
-      .on('click', function(d){
-      	memos = filterToHexBin(globals.data.memos, d)
-      	console.log(memos)
+	      .attr("class", "hexagons")
+	    .selectAll(".hexagons")
+	      .data(globals.map.hexbin(datasetArray))
+	    .enter().append("path")
+	    	.attr('class', 'hexagon')
+	      .attr("d", globals.map.hexbin.hexagon())
+	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+	      .style("fill", function(d) { return color(d3.median(d, function(d) { return +d.airTemp; })); })
+	      //.attr("fill", 'green')
+	      .attr('stroke', 'orange')
+	      .style('stroke-width', 0.25)
+	      .on('click', function(d){
+	      	//memos = filterToHexBin(globals.data.memos, d)
+	      	//console.log(memos)
+	      	console.log(d);
       })
       .on('mouseover', function(d){
       	d3.select(this).moveToFront()
       	d3.select(this).style({'stroke': 'white', "stroke-width": 1})
-      	memos = filterToHexBin(globals.data.memos, d)
+      	memos = filterToHexBin(globals.filteredMemos, d)
       	displayMemos(memos)
       })
       .on('mouseout', function(d){
@@ -266,7 +278,6 @@ function displayShipDataHexes(datasetArray){
       })
       //set the stack order
       globals.land.moveToFront();
-      globals.ports.moveToFront();
 }
 
 function getPorts(){        
@@ -281,9 +292,11 @@ function displayPorts(portData){
 	globals.ports = globals.map.features.selectAll(".port")
 		.data(portData)
 		.enter().append('g')
+		.attr('class', 'port')
 		
 	globals.ports
 		.append("circle")
+		.attr('class', 'port-marker')
 		.attr("cx", function(d){
 			projx = globals.map.projection([d.Longitude, d.Latitude])[0]
 			return projx
@@ -292,19 +305,36 @@ function displayPorts(portData){
 			projy = globals.map.projection([d.Longitude, d.Latitude])[1]
 			return projy
 		})
-		.attr('r', 5)
+		.attr('r', 1)
 		.style('fill', 'black')
 		.style('stroke', 'black')
 		
 	globals.ports
 		.append('text')
-			.attr('x', function(d){return globals.map.projection([d.Longitude, d.Latitude])[0] + 10})
-			.attr('y', function(d){return globals.map.projection([d.Longitude, d.Latitude])[1] + 10})
+			.attr('class', 'port-label')
+			.attr('x', function(d){return globals.map.projection([d.Longitude, d.Latitude])[0] + 5})
+			.attr('y', function(d){return globals.map.projection([d.Longitude, d.Latitude])[1] - 5})
+			.style('font-size', '10px')
 			.text(function(d){
 				return d.OriginalName
 			})
-			.style('color', 'white')
-		
+			.style('fill', 'black')
+			.on('mouseover', function(){
+				d3.select(this).style("fill", 'white').style("cursor", "crosshair")
+				d3.select(this).moveToFront();
+				
+			})
+			.on('mouseout', function(){
+				d3.select(this).style('fill', 'black').style("cursor", "auto")
+			})
+}
+
+function refreshStackOrder(){
+	d3.selectAll(".overlay").moveToBack()
+	d3.selectAll(".hexagon").moveToFront()
+	globals.land.moveToFront()
+	globals.ports.moveToFront()
+	console.log("stack order complete")
 }
 
 
@@ -345,6 +375,7 @@ function processMemos(memos){
 		d['date'] = new Date(q)
 	})
 	globals.data.memos = memos
+	globals.filteredMemos = memos
 	console.log("Done loading memos")
 }
 
@@ -405,12 +436,22 @@ function loadShipLookup(){
 ///memo filtering functions
 function filterToBiology(memoSet){
 	//returns a an array of memos with only memos reporting biology included
-	o = _.where(memoSet, {memoType: "Biology"})
+	o = _.where(memoSet, {memoType: "biology"})
 	return o
 }
 function filterToShipAndRig(memoSet){
 	//returns an array of memos with only those reportingon the ship's condition included
 	o= _.where(memoSet, {memoType: "shipAndRig"})
+	return o
+}
+function filterToWeatherReports(memoSet){
+	//returns an array of memos with only those reporting daily weather reports
+	o = _.where(memoSet, {memoType: "weatherReport"})
+	return o
+}
+function filterToOther(memoSet){
+	//returns an array of memos with only those reporting other remarks included
+	o = _.where(memoSet, {memoType: "otherRemmarks"})
 	return o
 }
 function filterToAnchored(memoSet){
@@ -481,33 +522,124 @@ $(".projSelect").change(function(){
 
 function displayMemos(memoSet){
 	//displays the feed of observations in the right hand panel
-	$("#feed").empty();
-	for (item in memoSet){
-		memo = memoSet[item]
-		text = memo.memoText;
-		latitude = memo.Latitude
-		longitude = memo.Longitude
-		date = moment(memo.date)
-		meta = lookupVoyageID(memo['voyageID'])
-		captain = meta['captainName']
-		captainRank = meta['rank']
-		fromPlace = meta['fromPlace']
-		toPlace = meta['toPlace']
-		shipName = meta['shipName']
-		shipType = meta['shipType']
-		nationality = meta['nationality']
-		voyageStart = moment(meta['voyageStartDate'])
-		var duration = moment.duration(date.diff(voyageStart));
-		var daysSinceStart = Math.round(duration.asDays());
-		if (daysSinceStart < 0){
-			return
-		}
-		html = "<li class='list-group-item'>"
-		html += "<h6>" + captainRank + " " + captain + "</h6><span class='text-muted'><i>" + shipName + "</i>" + "</span><br />"
-		html += "<p class='log-entry'>" + text + "</p>"
-		html += "</li>"
-		$("#feed").append(html)
-	}
+	$("#feed").empty()
+	d3.select("#feed").selectAll(".log")
+		.data(memoSet)
+		.enter()
+		.append("li")
+			.attr('class', 'log')
+			.attr('class', 'list-group-item')
+			.html(function(d){
+				meta = lookupVoyageID(d['voyageID'])
+				text = d.memoText;
+				latitude = d.Latitude
+				longitude = d.Longitude
+				date = moment(d.date)
+				meta = lookupVoyageID(d['voyageID'])
+				captain = meta['captainName']
+				captainRank = meta['rank']
+				fromPlace = meta['fromPlace']
+				toPlace = meta['toPlace']
+				shipName = meta['shipName']
+				shipType = meta['shipType']
+				nationality = meta['nationality']
+				voyageStart = moment(meta['voyageStartDate'])
+				var duration = moment.duration(date.diff(voyageStart));
+				var daysSinceStart = Math.round(duration.asDays());
+				if (daysSinceStart < 0){
+					daysSinceStart = 0 
+				}
+				if (!captain || captain ==""){
+					captain = "Unknown"
+				}
+				
+
+				img = lookupCaptainImage(captain);
+				
+				popoverText = "<div class='hovercard' id='hover_" + d.locationID + "'>"
+				popoverText += "<p>Captain Name: " + captain + "</p>"
+				popoverText += "<p>From Place: " + fromPlace + "</p>"
+				popoverText += "<p>To Place: " + toPlace + "</p>"
+				
+				formatDate = moment.weekdays()[date.weekday()] + ", " + date.date() + nth(date.date()) + " " + moment.months()[date.month() - 1] + ", " + date.year()
+				html = "<div class='row log-row' id='log_" + d.locationID + "'>"
+				html += "<img src='" + img + "' class='captain-thumb col-xs-3'/>"
+				html += "<div class='col-xs-9 log-header' id='header_" + d.locationID + "'>"
+				html += "<h6 class='captain-heading' class='col-xs-12'>" + captainRank + " " + captain + "</h6>"
+				html += "<small class='log-shipname col-xs-12 text-muted'>" + shipName + "</small>"
+				html += "<i class='log-date col-xs-12 text-muted'>" + formatDate + "</i>"
+				html += "<p class='log-entry'>" + text + "</p>"
+				html += "</div>"
+				html += "</div>"
+				// html += '<div class="basic-content" style="display: none;">'
+				// html += '<div class="hover-card-details left-align">'
+				// html += '<div class="hover-card-header left-align">'
+				// html += '<div class="hover-card-pic left-align">'
+				// html += '<span class="image-wrapper medium">'
+				// html += '<a href="" class="left-align" style="background:url(https://avatars1.githubusercontent.com/u/98681?v=3&s=460)"></a>'
+				// html += '</ span>'
+				// html += '</div>'
+				// html += '<h4 class="left-align"><a href="#">Mark Otto</a></h4>'
+				// html += 'Mark Otto is a designer living and working in San Francisco. Originally from Wisconsin. At Twitter, He also created the popular open source front-end toolkit Bootstrap with @fat.'		
+				// html += '</div>'
+				// html += '<ul class="hover-card-content left-align">'
+				// html += '<li class="right-aligned">'
+				// html += '<span class="desc">Favorites</span><span class="content">60,56</span>'
+			// html += '</li>'
+			// html += '<li class="right-aligned">'
+				// html += '<span class="desc">Followers</span><span class="content">40.9k</span>'
+			// html += '</li>'
+			// html += '<li class="right-aligned">'
+				// html += '<span class="desc">Following</span>'
+				// html += '<span class="content">'
+				// html += '<a href="" data-toggle="tooltip">101</a>'
+				// html += '</span>'
+			// html += '</li>'
+			// html += '<li class="right-aligned">'
+				// html += '<span class="desc">Tweets</span>'
+				// html += '<span class="content"><a href="#">24k</a></span>'
+			// html += '</li>'
+		// html += '</ul>'
+	// html += '</div> '
+	// html += '<span class="hover-card-options-wrapper">'
+		// html += '<span class="hover-card-options">'
+			// html += '<ul>'
+				// html += '<li><a data-toggle="modal" data-backdrop="true" data-keyboard="true" href="https://twitter.com/mdo"><i class="glyphicon glyphicon-envelope"></i>@mdo</a></li>'
+			// html += '</ul>'
+		// html += '</span>'
+	// html += '</span>'
+// html += '</div>'
+// 			
+	// $('.basic-hovercard').popover({ 
+		// html : true,
+		// trigger: 'manual',
+		// placement: function (context, source) {
+			// return "bottom";
+		// },
+		// content: function() {
+			// return $('.basic-content').html();   
+		// }
+	// }).on("click", function(e) {
+		// e.preventDefault();
+	// }).on("mouseenter", function() {
+		// var _this = this;
+		// $(this).popover("show");
+		// $(this).siblings(".popover").on("mouseleave", function() {
+			// $(_this).popover('hide');
+		// });
+	// }).on("mouseleave", function() {
+		// var _this = this;
+		// setTimeout(function() {
+			// if (!$(".popover:hover").length) {
+				// $(_this).popover("hide")
+			// }
+		// }, 100);
+	// });
+		
+
+				return html;
+			})
+			
 }
 
 //lookup functions
@@ -563,3 +695,54 @@ function lookupVoyageID(voyageID){
 	return o[0]
 	
 }
+
+function nth(d) {
+	//formats ordinal numbers --> 1st, 2nd, 3rd etc
+  if(d>3 && d<21) return 'th'; 
+  switch (d % 10) {
+        case 1:  return "st";
+        case 2:  return "nd";
+        case 3:  return "rd";
+        default: return "th";
+    }
+} 
+
+function loadCaptainMetadata(){
+	d3.csv("/assets/data/captain_metadata.csv", function(data){
+		globals.data.captain_metadata = data;
+		console.log('Got metadata for captains')
+	})
+}
+function lookupCaptainImage(captainName){
+	//lookup the image for this captain from the lookup file
+	o = _.findWhere(globals.data.captain_metadata, {captainName: captainName});
+	if (o){
+		return o.Image;
+	}else{
+		return ""
+	}
+}
+function changeMemoSet(){
+	v = $(this)
+	memoType = v.val()
+	globals.memoType = memoType
+	if (memoType == "All"){
+		globals.filteredMemos = globals.data.memos
+	}else if (memoType == "Biology"){
+		globals.filteredMemos = filterToBiology(globals.data.memos)
+	}else if (memoType == "WeatherReports"){
+		globals.filteredMemos=filterToWeatherReports(globals.data.memos)
+	}else if (memoType == "cargo"){
+		globals.filteredMemos = filterToCargo(globals.data.memos)
+	}else if (memoType == "warsAndFights"){
+		globals.filteredMemos = filterToWarsAndFights(globals.data.memos)
+	}else if (memoType == "shipAndRig"){
+		globals.filteredMemos = filterToShipAndRig(globals.data.memos)
+	}else if(memoType == "other"){
+		globals.filteredMemos = filterToOther(globals.data.memos)
+	}else if(memoType == "lifeOnBoard"){
+		globals.filteredMemos = filterToLifeOnBoard(globals.data.memos)
+	}
+	console.log(globals.filteredMemos)
+}
+$(".memoSelect").change(changeMemoSet)

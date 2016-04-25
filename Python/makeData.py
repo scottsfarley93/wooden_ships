@@ -24,7 +24,7 @@ if not remoteConn:
     exit()
 print "Connected."
 
-out = open("/users/scottsfarley/documents/wooden_ships/main/assets/data/ship_lookup.csv", 'w')
+out = open("/users/scottsfarley/documents/wooden_ships/main/assets/data/captain_metadata.csv", 'w')
 writer = csv.writer(out, lineterminator="\n")
 header = []
 
@@ -53,14 +53,26 @@ header = []
 #
 #
 # #
-# #
-header = ["voyageID", "captainName", "rank", "fromPlace", "toPlace", "voyageStartDate", "nationality", "shipName", "shipType", "companyName"]
-sql = "SELECT voyages.voyageID, captains.captainName, rank, voyages.fromPlace, voyages.toPlace, voyages.startdate, nations.nationality, ships.shipName," \
-      "ships.shipType, companies.companyName from voyages " \
-      "INNER JOIN ships on ships.shipid=voyages.shipid " \
-      "INNER JOIN companies on companies.companyid=voyages.companyid " \
-      "INNER JOIN nations on nations.nationid=voyages.nationid " \
-      "INNER JOIN captains on captains.captainid=voyages.captainid ;"
+# # #
+# header = ["voyageID", "captainName", "rank", "fromPlace", "toPlace", "voyageStartDate", "nationality", "shipName", "shipType", "companyName"]
+# sql = "SELECT voyages.voyageID, captains.captainName, rank, voyages.fromPlace, voyages.toPlace, voyages.startdate, nations.nationality, ships.shipName," \
+#       "ships.shipType, companies.companyName from voyages " \
+#       "INNER JOIN ships on ships.shipid=voyages.shipid " \
+#       "INNER JOIN companies on companies.companyid=voyages.companyid " \
+#       "INNER JOIN nations on nations.nationid=voyages.nationid " \
+#       "INNER JOIN captains on captains.captainid=voyages.captainid ;"
+
+# header = ["shipName", "shipType", "nationality", "company"]
+# sql = "SELECT distinct shipName, shipType, nationality, companyName from ships " \
+#       "INNER join voyages on voyages.shipid=ships.shipid " \
+#       "inner join nations on nations.nationid=voyages.nationid " \
+#       "inner join companies on companies.companyid=voyages.companyid;"
+
+header = ["captainName", "rank", "nationality", "company"]
+sql = "SELECT distinct captainName, rank, nationality, companyName from captains " \
+      "INNER join voyages on voyages.captainid=captains.captainid " \
+      "inner join nations on nations.nationid=voyages.nationid " \
+      "inner join companies on companies.companyid=voyages.companyid;"
 
 writer.writerow(header)
 
