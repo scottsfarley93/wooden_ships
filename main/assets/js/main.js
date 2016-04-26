@@ -49,7 +49,7 @@ parseDate = d3.time.format("%x").parse;
 var zoom = d3.behavior.zoom()
     .translate([0, 0])
     .scale(1)
-    .scaleExtent([1, 12])
+    .scaleExtent([1, 21])
     .on("zoom", zoomed);
     
 
@@ -722,6 +722,19 @@ function lookupCaptainImage(captainName){
 		return ""
 	}
 }
+
+function summarizeHexBin(hexbin){
+	
+}
+
+function enterIsolationMode(){
+	
+}
+function exitIsolationMode(){
+	
+}
+
+
 function changeMemoSet(){
 	v = $(this)
 	memoType = v.val()
