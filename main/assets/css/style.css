@@ -6,7 +6,6 @@
 
 .mapContainer{
 	fill: #a4bac7;
-
 }
 
 .dropdownProjections{
@@ -31,11 +30,7 @@
 	height: 100%;
 }
 
-#hexSlider{
-	height: 25%;
-	width: 250px;
-	margin-left: 25px;
-}
+
 
 #mainContainer{
 	height: 100%;
@@ -89,4 +84,17 @@ html, body{
 }
 .basic-content, .basic-hovercard, .hover-card-details{
 	z-index: 100001;
+}
+#weatherSummaryList{
+	height: 100%;
+}
+#controls{
+	height: 100%;
+	overflow-y: scroll;
+}
+
+#hexSlider{
+	height: 10px;
+	width: 250px;
+	margin-left: 25px;
 }

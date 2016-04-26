@@ -272,6 +272,8 @@ function displayShipDataHexes(datasetArray){
       	d3.select(this).style({'stroke': 'white', "stroke-width": 1})
       	memos = filterToHexBin(globals.filteredMemos, d)
       	displayMemos(memos)
+      	summary = getSummaryOfHex(d)
+      	displaySummary(summary)
       })
       .on('mouseout', function(d){
       	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
@@ -723,8 +725,102 @@ function lookupCaptainImage(captainName){
 	}
 }
 
-function summarizeHexBin(hexbin){
-	
+function getSummaryOfHex(hexbin){
+	//returns an object with the aggregate weather summary from this hex bin
+	props = {}
+	props['centroidx'] = hexbin.x
+	props['centroidy'] = hexbin.y
+	props['numInBin'] = hexbin.length
+	props['fog'] = 0
+	props['snow'] = 0
+	props['gusts'] = 0
+	props['thunder'] = 0
+	props['hail'] = 0
+	props['rain'] = 0
+	props['seaIce'] = 0
+	props['meanAirTemp'] = 0;
+	props['meanPressure'] = 0;
+	props['meanSST'] = 0;
+	props['numAirTemp'] = 0;
+	props['numPressure'] = 0;
+	props['numSST'] = 0;
+	props['numWindSpeed'] = 0;
+	props['meanWindSpeed'] = 0;
+	props['numWindDirection'] = 0;
+	props['meanWindDirection'] = 0;
+	for (item in hexbin){
+		v = hexbin[item]
+		if (typeof(v) == "object"){//make sure we are looking at the actual data objects not the hex metadata
+			if (v['fog'] == "True"){//these are still strings not booleans 
+				props['fog'] += 1;
+			}
+			if (v['snow'] == "True"){
+				props['snow'] += 1;
+			}
+			if (v['gusts'] == "True"){
+				props['gusts'] += 1;
+			}
+			if(v['thunder'] == "True"){
+				props['thunder'] += 1;
+			}
+			if (v['hail'] == 'True'){
+				props['hail'] +=1;
+			}
+			if(v['seaIce'] == "True"){
+				props['seaIce'] += 1;
+			}
+			if (v['rain'] == "True"){
+				props['rain'] += 1;
+			}
+			if (v['airTemp'] != -1){
+				props['numAirTemp'] += 1;
+				props['meanAirTemp'] += v['airTemp']
+			}
+			if(v['pressure'] != -1){
+				props['numPressure'] +=1 ;
+				props['meanPressure'] += v['pressure']
+			}
+			if(v['sst'] != -1){
+				props['numSST'] += 1;
+				props['meanSST'] += v['sst']
+			}
+			if(v['windSpeed'] != -1){
+				props['numWindSpeed'] +=1;
+				props['meanWindSpeed'] += v['windSpeed']
+			}	
+			if(v['winddirection'] != -1){
+				props['numWindDirection'] +=1;
+				props['meanWindDirection'] += v['windDirection']
+			}
+		}
+	} //end for loop
+	//correct the means, but don't divide by zero
+	if (props['numAirTemp'] != 0){
+		props['meanAirTemp'] = props['meanAirTemp'] / props['numAirTemp']
+	}else{
+		props['meanAirTemp'] = false;
+	}
+	if (props['numPressure'] != 0){
+		props['meanPressure'] = props['meanPressure'] / props['numPressure']
+	}else{
+		props['meanPressure'] = false;
+	}
+	if (props['numSST'] != 0){
+		props['meanSST'] = props['meanSST'] / props['numSST']
+	}else{
+		props['meanSST'] = false;
+	}
+		if (props['numWindSpeed'] != 0){
+		props['meanWindSpeed'] = props['meanWindSpeed'] / props['numWindSpeed']
+	}else{
+		props['meanWindSpeed'] = false;
+	}
+		if (props['numWindDirection'] != 0){
+		props['meanWindDirection'] = props['meanWindDirection'] / props['numWindDirection']
+	}else{
+		props['meanWindDirection'] = false;
+	}
+	return props
 }
 
 function enterIsolationMode(){
@@ -732,6 +828,36 @@ function enterIsolationMode(){
 }
 function exitIsolationMode(){
 	
+}
+function displaySummary(props){
+	$("#weatherSummaryList").empty()
+	html = "<li class='list-group'>Number of observations: " + props['numInBin'] + "</li>"
+	html += "<li class='list-group'>X-Centroid: " + props['centroidx'] + "</li>"
+	html += "<li class='list-group'>Y-Centroid: " + props['centroidy'] + "</li>"
+	html += "<li class='list-group'>Fog: " + props['fog'] + "<span class='text-muted'>(" + round2(props['fog'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Rain: " + props['rain'] + "<span class='text-muted'>(" + round2(props['rain'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Snow: " + props['snow'] + "<span class='text-muted'>(" + round2(props['snow'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Sea Ice: " + props['seaIce'] + "<span class='text-muted'>(" + round2(props['seaIce'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Hail: " + props['hail'] + "<span class='text-muted'>(" + round2(props['hail'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
+	if (summary['meanAirTemp']){
+		html += "<li class='list-group'>Mean Air Temperature (*C): " + round2(props['meanAirTemp']) + "<span class='text-muted'>(" + (props['numAirTemp'])  + " obs.)</li>"
+	}
+	
+	if (summary['meanPressure']){
+		html += "<li class='list-group'>Mean Pressure (mmHg): " + round2(props['meanPressure']) + "<span class='text-muted'>(" + (props['numPressure'])  + " obs.)</li>"
+	}
+	if (summary['meanSST']){
+		html += "<li class='list-group'>Mean Sea Surface Temp. (*C): " + round2(props['meanSST']) + "<span class='text-muted'>(" + (props['numSST'])  + " obs.)</li>"
+	}
+	if (summary['meanWindSpeed']){
+		html += "<li class='list-group'>Mean Wind Speed (m/s): " + round2(props['meanWindSpeed']) + "<span class='text-muted'>(" + (props['numWindSpeed'])  + " obs.)</li>"
+	}
+		if (summary['meanSST']){
+		html += "<li class='list-group'>Mean Wind Direction (deg): " + round2(props['meanWindDirection']) + "<span class='text-muted'>(" + (props['numWindDirection'])  + " obs.)</li>"
+	}
+	$("#weatherSummaryList").append(html)
 }
 
 
@@ -759,3 +885,9 @@ function changeMemoSet(){
 	console.log(globals.filteredMemos)
 }
 $(".memoSelect").change(changeMemoSet)
+
+
+function round2(num){
+	//rounds to at most two decimal places
+	return Math.round(num * 100) / 100;
+}

@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fcf822a2-70a0-4a13-ab1c-a1f19755aba7" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/js/main.js" afterPath="$PROJECT_DIR$/main/assets/js/main.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/ship_images.txt" afterPath="$PROJECT_DIR$/main/assets/data/ship_images.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/ship_wikipedia.txt" afterPath="$PROJECT_DIR$/main/assets/data/ship_wikipedia.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="fcf822a2-70a0-4a13-ab1c-a1f19755aba7" name="Default" comment="" />
     <ignored path="wooden_ships.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
