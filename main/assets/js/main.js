@@ -387,25 +387,25 @@ function changeCountry(countryName){
 	
 	
 	if (countryName == "British"){
-		f = "/assets/data/british_points.csv"
+		f = "/assets/data/british_points_updated.csv"
 		d3.csv("/assets/data/british_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "Dutch"){
-		f = "/assets/data/dutch_points.csv"
+		f = "/assets/data/dutch_points_updated.csv"
 		d3.csv("/assets/data/dutch_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "Spanish"){
-		f = "/assets/data/spanish_points.csv"
+		f = "/assets/data/spanish_points_updated.csv"
 		d3.csv("/assets/data/spanish_memos_update.csv", function(data){
 			processMemos(data)
 		})
 	}
 	else if (countryName == "French"){
-		f = "/assets/data/french_points.csv"
+		f = "/assets/data/french_points_updated.csv"
 		d3.csv("/assets/data/french_memos_update.csv", function(data){
 			processMemos(data)
 		})
@@ -788,9 +788,9 @@ function getSummaryOfHex(hexbin){
 				props['numWindSpeed'] +=1;
 				props['meanWindSpeed'] += v['windSpeed']
 			}	
-			if(v['winddirection'] != -1){
+			if(v['winddirection'] != -1 && v['winddirection'] != 999){
 				props['numWindDirection'] +=1;
-				props['meanWindDirection'] += v['windDirection']
+				props['meanWindDirection'] += v['winddirection']
 			}
 		}
 	} //end for loop
@@ -815,7 +815,7 @@ function getSummaryOfHex(hexbin){
 	}else{
 		props['meanWindSpeed'] = false;
 	}
-		if (props['numWindDirection'] != 0){
+	if (props['numWindDirection'] != 0){
 		props['meanWindDirection'] = props['meanWindDirection'] / props['numWindDirection']
 	}else{
 		props['meanWindDirection'] = false;
@@ -831,32 +831,20 @@ function exitIsolationMode(){
 }
 function displaySummary(props){
 	$("#weatherSummaryList").empty()
-	html = "<li class='list-group'>Number of observations: " + props['numInBin'] + "</li>"
-	html += "<li class='list-group'>X-Centroid: " + props['centroidx'] + "</li>"
-	html += "<li class='list-group'>Y-Centroid: " + props['centroidy'] + "</li>"
-	html += "<li class='list-group'>Fog: " + props['fog'] + "<span class='text-muted'>(" + round2(props['fog'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Rain: " + props['rain'] + "<span class='text-muted'>(" + round2(props['rain'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Snow: " + props['snow'] + "<span class='text-muted'>(" + round2(props['snow'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Sea Ice: " + props['seaIce'] + "<span class='text-muted'>(" + round2(props['seaIce'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Hail: " + props['hail'] + "<span class='text-muted'>(" + round2(props['hail'] / props['numInBin'] * 100)  + "%)</li>"
-	html += "<li class='list-group'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
-	if (summary['meanAirTemp']){
-		html += "<li class='list-group'>Mean Air Temperature (*C): " + round2(props['meanAirTemp']) + "<span class='text-muted'>(" + (props['numAirTemp'])  + " obs.)</li>"
-	}
-	
-	if (summary['meanPressure']){
-		html += "<li class='list-group'>Mean Pressure (mmHg): " + round2(props['meanPressure']) + "<span class='text-muted'>(" + (props['numPressure'])  + " obs.)</li>"
-	}
-	if (summary['meanSST']){
-		html += "<li class='list-group'>Mean Sea Surface Temp. (*C): " + round2(props['meanSST']) + "<span class='text-muted'>(" + (props['numSST'])  + " obs.)</li>"
-	}
-	if (summary['meanWindSpeed']){
-		html += "<li class='list-group'>Mean Wind Speed (m/s): " + round2(props['meanWindSpeed']) + "<span class='text-muted'>(" + (props['numWindSpeed'])  + " obs.)</li>"
-	}
-		if (summary['meanSST']){
-		html += "<li class='list-group'>Mean Wind Direction (deg): " + round2(props['meanWindDirection']) + "<span class='text-muted'>(" + (props['numWindDirection'])  + " obs.)</li>"
-	}
+	html = "<li class='list-group-item'>Number of observations: " + props['numInBin'] + "</li>"
+	html += "<li class='list-group-item'>X-Centroid: " + round2(props['centroidx']) + "</li>"
+	html += "<li class='list-group-item'>Y-Centroid: " + round2(props['centroidy']) + "</li>"
+	html += "<li class='list-group-item'>Fog: " + props['fog'] + "<span class='text-muted'>(" + round2(props['fog'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Rain: " + props['rain'] + "<span class='text-muted'>(" + round2(props['rain'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Snow: " + props['snow'] + "<span class='text-muted'>(" + round2(props['snow'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Sea Ice: " + props['seaIce'] + "<span class='text-muted'>(" + round2(props['seaIce'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Hail: " + props['hail'] + "<span class='text-muted'>(" + round2(props['hail'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Thunder: " + props['thunder'] + "<span class='text-muted'>(" + round2(props['thunder'] / props['numInBin'] * 100)  + "%)</li>"
+	html += "<li class='list-group-item'>Mean Air Temperature (*C): " + round2(props['meanAirTemp']) + "<span class='text-muted'>(" + (props['numAirTemp'])  + " obs.)</li>"
+	html += "<li class='list-group-item'>Mean Pressure (mmHg): " + round2(props['meanPressure']) + "<span class='text-muted'>(" + (props['numPressure'])  + " obs.)</li>"
+	html += "<li class='list-group-item'>Mean Wind Speed (m/s): " + round2(props['meanWindSpeed']) + "<span class='text-muted'>(" + (props['numWindSpeed'])  + " obs.)</li>"
+	html += "<li class='list-group-item'>Mean Wind Direction (deg): " + round2(props['meanWindDirection']) + "<span class='text-muted'>(" + (props['numWindDirection'])  + " obs.)</li>"
 	$("#weatherSummaryList").append(html)
 }
 
