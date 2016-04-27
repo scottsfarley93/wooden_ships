@@ -16,6 +16,8 @@ globals.map.dimensions.width = $(window).width() //100% of the window width
 globals.map.projection;
 globals.map.path;
 
+globals.attr = 'airTemp'
+
 globals.data = {};
 globals.data.filteredShips = []; //keep track of the currently applied filter
 
@@ -30,20 +32,10 @@ var radius = d3.scale.sqrt()
 var expressedProj = attrProj[0];
 
 
-//this should be replaced with a better coloring func
-var color = d3.scale.linear()
-    .domain([0, 1000])
-    .range(["green","darkred"])
-    .interpolate(d3.interpolateLab);
-    
-parseDate = d3.time.format("%x").parse;
-
-
-
 $(document).ready(function(){
 	//stuff that happens as the map is created.
 	setMap(); //creates the map
-	getShipData(displayShipDataHexes) //get the ship data 
+	getShipData(displayShipDataHexes); //get the ship data 
 	//createDropdown(attrArray); //creates the dropdown menu for years/basemap
 	//projDropdown(attrProj) //creates the dropdown menu for projection
 	
@@ -64,7 +56,7 @@ function setMap(){
 	        
 	    //use queue.js to parallelize asynchronous data loading
 	    d3_queue.queue()
-	        .defer(d3.json, "assets/data/land.topojson") //load base map data
+	        .defer(d3.json, "assets/data/ne_50m_land.topojson") //load base map data
 	        .await(callback);
 	        
 		function callback(error, base, overlay1, overlay2, overlay3){
@@ -73,7 +65,7 @@ function setMap(){
 	        console.log(base);
 	        
 	        //translate europe TopoJSON
-	        var landBase = topojson.feature(base, base.objects.ne_110m_land).features
+	        var landBase = topojson.feature(base, base.objects.ne_50m_land).features
 	         
 	         
 	      //create the hexbin layout
@@ -91,8 +83,8 @@ function setMap(){
 	            .data(landBase)
 	            .enter()
 	            .append("path")
-	            .attr("class", "land")
-	            .style("stroke", "black").style("fill", "blue"); 
+	            .attr("class", "land");
+	            //.style("stroke", "black").style("fill", "blue"); 
 
 	        console.log(globals.land)
 	         
@@ -107,7 +99,55 @@ function zoomed() {
     mapContainer.selectAll(".land").style("stroke-width", 1.5 / d3.event.scale + "px");
 };
 	
+
+
+function createColorScheme (maxDomain, colors){
 	
+	var color = d3.scale.linear()
+	    .domain([0, maxDomain])
+	    .range(colors)
+	    .interpolate(d3.interpolateLab);
+	console.log(color.domain())
+	console.log(color.range())
+	return color;
+
+};
+
+// function color(ships, attr) {
+
+
+// 	var minDomain = d3.min(ships)
+
+// 	var maxDomain = 
+
+// 	// var hexColors = map.selectAll(".hexagons")
+// 	// 	.style("fill", function(d) { return color(d.length); });
+
+
+
+// 	// //format a data array of ship data and display it on the map as hexbins
+// 	// datasetArray.forEach(function(d){
+// 	// 	var p = globals.map.projection([d['longitude'], d['latitude']])
+// 	// 	d['projected'] = p
+// 	// 	//d.date = parseDate(d.date);
+// 	// })
+// 	//  globals.map.hexagons = globals.map.mapContainer.append("g")
+//  //      .attr("class", "hexagons")
+//  //    .selectAll(".hexagons")
+//  //      .data(globals.map.hexbin(datasetArray))
+//  //    .enter().append("path")
+//  //      .attr("d", globals.map.hexbin.hexagon())
+//  //      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+//  //      //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
+//  //      //.attr("fill", 'green')
+//  //      //.attr('stroke', 'orange').style('stroke-width', 0.25)
+//  //      .style("fill", function(d) { return color(d.length); });
+
+// 	// ]
+
+// };
+    
+
 	
 	
 //function to create a dropdown menu for attribute selection
@@ -148,10 +188,16 @@ function projDropdown(attrProj){
 function changeProjection(projection, scale, center){
     //decide what projection to change to
     if (projection == "VDG") {
-    	var projection = d3.geo.vanDerGrinten4()
-    		.scale(125)
-   	 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
-    		.precision(.1);
+    	// var projection = d3.geo.vanDerGrinten4()
+    	// 	.scale(125)
+   	 // 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+    	// 	.precision(.1);
+
+		var projection = d3.geo.azimuthalEqualArea()
+		    .clipAngle(180 - 1e-3)
+		    .scale(140)
+		    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+		    .precision(.1);
     }
     else if (projection == "mercator"){
     	var projection = d3.geo.mercator()
@@ -170,7 +216,7 @@ function changeProjection(projection, scale, center){
 		    .precision(.1);
     }
    var path = d3.geo.path()
-    .projection(projection);
+    	.projection(projection);
    //make global
    globals.map.projection = projection;
    globals.map.path = path;
@@ -258,11 +304,265 @@ function displayShipDataHexes(datasetArray){
     .selectAll(".hexagons")
       .data(globals.map.hexbin(datasetArray))
     .enter().append("path")
+    	.attr("class", "hexagon")
       .attr("d", globals.map.hexbin.hexagon())
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-      //.style("fill", function(d) { return color(d3.median(d, function(d) { return +d.date; })); });
-      .attr("fill", 'green')
-      .attr('stroke', 'orange').style('stroke-width', 0.25)
+      //.style("fill", function(d) { return color(d3.mean(d, function(d) { return +d.windSpeed; })); });
+      //.attr("fill", 'green')
+      //.attr('stroke', 'orange').style('stroke-width', 0.25)
+
+      //number of ships by hexbin
+      //.style("fill", function(d) { return color(d.length); });
+
+    // console.log(d3.min(globals.map.hexagons, function(d) { return d.length; }));
+    // console.log(d3.max(globals.map.hexagons, function(d) {return d.length; }));
+
+
+      //average windSpeed by hexbin
+      // .style("fill", function(d) {
+      // 	return color(d3.mean(d, function(d) { 
+      // 		return +d.airTemp; 
+      // 		})); 
+
+      // })
+      .on('click', function(d){
+      		console.log(this)
+      		console.log(d)
+      })
+
+      styleHexbins(globals.data.filteredShips, globals.attr)
+
+}
+
+function styleHexbins(ships, attr){
+
+	// Beginning of boolean attributes
+	if (attr == "fog") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "gusts") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "hail") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "rain") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "seaIce") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "snow") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	// boolean
+	else if (attr == "thunder") {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+	//the beginning of numeric attributes
+	else if (attr == "airTemp"){
+
+		var maxDomain = d3.max(ships, function(d){
+			return +d["airTemp"]
+		});
+
+		console.log("Max domain is: " + maxDomain);
+
+		var hexColor = createColorScheme(maxDomain, ["yellow", "red"]);
+
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill", function(d){
+				return hexColor(d3.mean(d, function(d){
+					return +d.airTemp;
+				}))
+			});
+	}
+
+	//numeric
+	else if (attr == "pressure"){
+
+		var maxDomain = d3.max(ships, function(d){
+			return +d["pressure"]
+		});
+
+		console.log("Max domain is: " + maxDomain);
+
+		var hexColor = createColorScheme(maxDomain, ["white", "purple"]);
+
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill", function(d){
+				return hexColor(d3.mean(d, function(d){
+					return +d.pressure;
+					
+				}))
+			});
+
+	}
+
+	//numeric
+	else if (attr == "sst"){
+
+		var maxDomain = d3.max(ships, function(d){
+			return +d["sst"]
+		});
+
+		console.log("Max domain is: " + maxDomain);
+
+		var hexColor = createColorScheme(maxDomain, ["yellow", "red"]);
+
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill", function(d){
+				return hexColor(d3.mean(d, function(d){
+					return +d.sst;
+				}))
+			});
+	}
+
+	//numeric
+	else if (attr == "windSpeed"){
+
+		var maxDomain = d3.max(ships, function(d){
+			return +d["windSpeed"]
+		});
+
+		console.log("Max domain is: " + maxDomain);
+
+		var hexColor = createColorScheme(maxDomain, ["white", "purple"]);
+
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill", function(d){
+				return hexColor(d3.mean(d, function(d){
+					return +d.windSpeed;
+				}))
+			});
+	}
+
+	//numeric
+	else if (attr == "winddirection"){
+
+		var maxDomain = d3.max(ships, function(d){
+			return +d["winddirection"]
+		});
+
+		console.log("Max domain is: " + maxDomain);
+
+		var hexColor = createColorScheme(maxDomain, ["white", "purple"]);
+
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill", function(d){
+				return hexColor(d3.mean(d, function(d){
+					return +d.winddirection;
+				}))
+			});
+	}
+
+	// default count data if filter has not been applied
+	else {
+
+		var maxDomain = d3.max(globals.map.hexagons[0], function(d){
+			return d.__data__.length});
+
+		console.log("Max domain is: " + maxDomain)
+
+		var hexColor = createColorScheme(maxDomain, ["white", "steelblue"]);
+		
+		console.log(hexColor)
+		d3.selectAll(".hexagon")
+			.attr("fill",function(d){return hexColor(d.length)});
+	}
+
+} //end of styleHexbin
+
+function switchAttribute(attr){
+	globals.attr = attr
+	styleHexbins(globals.data.filteredShips, attr);
 }
 
 function getPorts(filter, callback){        
@@ -329,6 +629,3 @@ $( "#hexSlider" ).slider({
 	}
 });
 //control hex bin size
-
-
-
