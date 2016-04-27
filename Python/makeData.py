@@ -214,6 +214,7 @@ shipFields = {
             'shipName' : "",
             'shipType' : "",
             'company': "",
+            'voyageID': ""
         }
 
 
@@ -221,34 +222,34 @@ doneText = []
 
 memoFields = ['obsDate', 'Latitude', 'Longitude', 'voyageID', 'locationID', 'memoType', 'memoText']
 
-shipMetadata = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/ship_metadata.csv", 'w'),
+shipMetadata = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/ship_lookup.csv", 'w'),
                                fieldnames = shipFields.keys())
 shipMetadata.writeheader()
 
-britishPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/british_points_updated.csv", 'w'),
+britishPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/british_points_updated.csv", 'w'),
                                fieldnames = obs.keys())
 britishPoints.writeheader()
-britishMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/british_memos_updated.csv", 'w'),
+britishMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/british_memos_updated.csv", 'w'),
                                fieldnames = memoFields)
 britishMemos.writeheader()
 
-dutchPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/dutch_points_updated.csv", 'w'),
+dutchPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/dutch_points_updated.csv", 'w'),
                                fieldnames = obs.keys())
 dutchPoints.writeheader()
-dutchMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/dutch_memos_updated.csv", 'w'),
+dutchMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/dutch_memos_updated.csv", 'w'),
                                fieldnames = memoFields)
 dutchMemos.writeheader()
 
-spanishPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/spanish_points_updated.csv", 'w'),
+spanishPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/spanish_points_updated.csv", 'w'),
                                fieldnames = obs.keys())
 spanishPoints.writeheader()
-spanishMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/spanish_memos_updated.csv", 'w'),
+spanishMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/spanish_memos_updated.csv", 'w'),
                                fieldnames = memoFields)
 spanishMemos.writeheader()
-frenchPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/french_points_updated.csv", 'w'),
+frenchPoints = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/french_points_updated.csv", 'w'),
                                fieldnames = obs.keys())
 frenchPoints.writeheader()
-frenchMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/updated_data/french_memos_updated.csv", 'w'),
+frenchMemos = csv.DictWriter(open("/Users/scottsfarley/documents/wooden_ships/main/assets/data/french_memos_updated.csv", 'w'),
                                fieldnames = memoFields)
 frenchMemos.writeheader()
 
@@ -289,7 +290,7 @@ for row in reader:
         }
 
         if (metadata not in ships):
-            shipMetadata.writerow(metadata)
+            #shipMetadata.writerow(metadata)
             ships.append(metadata)
             voyageID +=1
 
@@ -303,15 +304,19 @@ for row in reader:
             longitude = float(row['Lon3'])
         except:
             continue
-        snow = row['Snow']
-        gusts = row['Gusts']
-        thunder = row['Thunder']
-        fog = row['Fog']
-        hail = row['Hail']
-        seaIce = row['SeaIce']
-        rain = row['Rain']
+        snow = bool(row['Snow'])
+        gusts = bool(row['Gusts'])
+        thunder = bool(row['Thunder'])
+        fog = bool(row['Fog'])
+        hail = bool(row['Hail'])
+        seaIce = bool(row['SeaIce'])
+        rain = bool(row['Rain'])
 
-        airTemp = row['ProbTair']
+        if row['ProbTair'] != '' and row['ProbTair'] != 'NA':
+            airTemp = row['ProbTair']
+        else:
+            airTemp = -1
+
         airPressureUnits = row['AirPressureReadingUnits']
         if airPressureUnits == 'Inches Mercury':
             pressure = float(row['BaroReading']) * 25.4
@@ -395,7 +400,16 @@ for row in reader:
                 t += " at a distance of " + dist + " " + units + "."
             LMText['memoText'] = t
             LMText['memoType'] = "Landmark"
-            toSubmit.append(LMText)
+            if nationality == "British":
+                britishMemos.writerow(LMText)
+            elif nationality == "Dutch":
+                dutchMemos.writerow(LMText)
+            elif nationality == "Spanish":
+                spanishMemos.writerow(LMText)
+            elif nationality == "French":
+                frenchMemos.writerow(LMText)
+
+
         if row['EncName'] != '' or row['EncNat'] != '' or row['EncRem'] != '':
             EncText = text
             t = "Ship encountered: " + row['EncRem'].lower()
@@ -529,16 +543,6 @@ for row in reader:
                         t += ".  Current flowing " + row['CurrentSpeed'] + " to the " + row['CurrentDir'] + "."
                 if t[-1] != '.':
                     t += '.'
-                if row['ShipSpeed'] != '' and row['Distance'] != '' and row['CMG'] != '':
-                    t += "Current heading: " + row['CMG'] + "."
-                    if row['ShipSpeed'] != 'NA':
-                        t += " Current speed: " + row['ShipSpeed'] + ". "
-                    if row['Distance'] != 'NA':
-                        if row['DistTravelledUnits'] == '':
-                            units = "miles"
-                        else:
-                            units = row['DistTravelledUnits']
-                        t += " Traveled " + row['Distance'] + " " + units + " today."
                 weatherReport['memoType'] = "weatherReport"
                 weatherReport['memoText'] = t
                 if nationality == "British":
@@ -553,7 +557,35 @@ for row in reader:
             print "Passing"
             i += 1
 
+        #
+        if row['ShipSpeed'] != '' and row['Distance'] != '' and row['CMG'] != '':
+            travelMemo = text
+            travelMemo['memoType'] = 'travelReport'
+            t = "Current heading: " + row['CMG'] + "."
+            if row['ShipSpeed'] != 'NA':
+                t += " Current speed: " + row['ShipSpeed'] + ". "
+            if row['Distance'] != 'NA':
+                if row['DistTravelledUnits'] == '':
+                    units = "miles"
+                else:
+                    units = row['DistTravelledUnits']
+                t += " Traveled " + row['Distance'] + " " + units + " today."
+            travelMemo['memoText'] = t
+            if nationality == "British":
+                britishMemos.writerow(travelMemo)
+            elif nationality == "Dutch":
+                dutchMemos.writerow(travelMemo)
+            elif nationality == "Spanish":
+                spanishMemos.writerow(travelMemo)
+            elif nationality == "French":
+                frenchMemos.writerow(travelMemo)
 
         if i % 100 == 0:
             print i
         i += 1
+
+idx = 0
+for item in ships:
+    item['voyageID'] = idx
+    shipMetadata.writerow(item)
+    idx += 1
