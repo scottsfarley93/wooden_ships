@@ -58,6 +58,7 @@ html, body{
 	max-height: 50%!important;
 	min-height: 50%!important;
 	background-color: rgba(255, 255, 255, 0.5)
+	z-index: 1000000;
 }
 .log-entry{
 	font-family: 'Shadows Into Light', cursive !important;

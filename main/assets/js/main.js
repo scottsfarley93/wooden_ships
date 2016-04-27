@@ -146,8 +146,7 @@ function zoomed() {
 	d3.selectAll(".land").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 	d3.selectAll(".hexagons").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 	d3.selectAll(".port").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-	//d3.selectAll(".hexagon").moveToFront();
-	//additional hex styling can go here
+	d3.selectAll(".overlay").attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 };
 	
 	
@@ -272,15 +271,29 @@ function displayShipDataHexes(datasetArray){
       })
       .on('mouseover', function(d){
       	d3.select(this).moveToFront()
-      	d3.select(this).style({'stroke': 'white', "stroke-width": 1})
+      	d3.select(this).style({'stroke': 'orange', "stroke-width": 1})
       	memos = filterToHexBin(globals.filteredMemos, d)
       	displayMemos(memos)
       	summary = getSummaryOfHex(d)
       	displaySummary(summary)
       })
       .on('mouseout', function(d){
-      	d3.select(this).style({'stroke': 'orange', 'stroke-width' : 0.25})
+      	if (!globals.isolationMode){
+      		d3.select(this).style({'stroke': 'none'})
+      	}
       })
+      .on('click', function(d){
+      	//enter isolationMode on click
+      	var _this = d3.select(this)
+      	if (!_this.classed('isolated')){
+      		//it hasnt been clicked yet, so enter isolation mode
+      		_this.style({'stroke': 'white', "stroke-width": 1})
+      		enterIsolationMode()
+      		_this.classed('isolated', true)
+      	}
+      })
+      
+      
       //set the stack order
       globals.land.moveToFront();
 }
@@ -831,9 +844,17 @@ function getSummaryOfHex(hexbin){
 }
 
 function enterIsolationMode(){
-	
+	globals.map.mapContainer.append("rect")
+		.attr('height', globals.map.dimensions.height)
+		.attr('width', globals.map.dimensions.width)
+		.attr('class', 'overlay').on('click', exitIsolationMode)
+	globals.isolationMode = true
 }
 function exitIsolationMode(){
+	d3.selectAll(".overlay")
+		.remove()
+	d3.selectAll('.isolated').style('stroke', 'none')
+	console.log("Exited isolation mode.")
 	
 }
 function displaySummary(props){
