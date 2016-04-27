@@ -30,6 +30,10 @@ scale0 = (globals.map.dimensions.width - 1) / 2 / Math.PI;
 
 globals.filter = {} //keep track of the currently applied filter
 
+globals.memoTooltip = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+
 
 var radius = d3.scale.sqrt()
     .domain([0, 12])
@@ -40,7 +44,7 @@ var expressedProj = attrProj[0];
 
 //this should be replaced with a better coloring func
 var color = d3.scale.linear()
-    .domain([0, 1000])
+    .domain([0, 60])
     .range(["green","darkred"])
     .interpolate(d3.interpolateLab);
     
@@ -258,9 +262,7 @@ function displayShipDataHexes(datasetArray){
 	    	.attr('class', 'hexagon')
 	      .attr("d", globals.map.hexbin.hexagon())
 	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-	      .style("fill", function(d) { return color(d3.median(d, function(d) { return +d.airTemp; })); })
-	      //.attr("fill", 'green')
-	      .attr('stroke', 'orange')
+	      .style("fill", function(d) { return color(d3.mean(d, function(d) { return +d.windSpeed; })); })
 	      .style('stroke-width', 0.25)
 	      .on('click', function(d){
 	      	//memos = filterToHexBin(globals.data.memos, d)
@@ -529,6 +531,8 @@ $(".projSelect").change(function(){
 	changeProjection(proj)
 })
 
+
+
 function displayMemos(memoSet){
 	//displays the feed of observations in the right hand panel
 	$("#feed").empty()
@@ -552,26 +556,33 @@ function displayMemos(memoSet){
 				shipName = meta['shipName']
 				shipType = meta['shipType']
 				nationality = meta['nationality']
-				voyageStart = moment(meta['voyageStartDate'])
+				voyageStart = moment(meta['voyageStart'])
 				var duration = moment.duration(date.diff(voyageStart));
-				var daysSinceStart = Math.round(duration.asDays());
-				if (daysSinceStart < 0){
-					daysSinceStart = 0 
-				}
+				var daysSinceStart = Math.abs(Math.round(duration.asDays()));
+				
+				//add this properties so we can access them on mouseover
+				d['captainName'] = captain
+				d['captainRank'] = captainRank
+				d['observer'] = meta['captainName2']
+				d['observerRank'] = meta['captainRank2']
+				d['fromPlace'] = fromPlace
+				d['toPlace'] = toPlace
+				d['shipName'] = shipName
+				d['shipType'] = shipType
+				d['nationality'] = nationality
+				d['voyageStart'] = voyageStart
+				d['voyageDaysSinceStart'] = daysSinceStart
+
 				if (!captain || captain ==""){
 					captain = "Unknown"
 				}
 				
 
 				img = lookupCaptainImage(captain);
-				
-				popoverText = "<div class='hovercard' id='hover_" + d.locationID + "'>"
-				popoverText += "<p>Captain Name: " + captain + "</p>"
-				popoverText += "<p>From Place: " + fromPlace + "</p>"
-				popoverText += "<p>To Place: " + toPlace + "</p>"
-				
+				d.imgSrc = img
 				formatDate = moment.weekdays()[date.weekday()] + ", " + date.date() + nth(date.date()) + " " + moment.months()[date.month() - 1] + ", " + date.year()
-				html = "<div class='row log-row' id='log_" + d.locationID + "'>"
+				//this is the feed entry
+				html = "<div class='row log-row basic-hovercard' id='log_" + d.locationID + "'>"
 				html += "<img src='" + img + "' class='captain-thumb col-xs-3'/>"
 				html += "<div class='col-xs-9 log-header' id='header_" + d.locationID + "'>"
 				html += "<h6 class='captain-heading' class='col-xs-12'>" + captainRank + " " + captain + "</h6>"
@@ -580,76 +591,52 @@ function displayMemos(memoSet){
 				html += "<p class='log-entry'>" + text + "</p>"
 				html += "</div>"
 				html += "</div>"
-				// html += '<div class="basic-content" style="display: none;">'
-				// html += '<div class="hover-card-details left-align">'
-				// html += '<div class="hover-card-header left-align">'
-				// html += '<div class="hover-card-pic left-align">'
-				// html += '<span class="image-wrapper medium">'
-				// html += '<a href="" class="left-align" style="background:url(https://avatars1.githubusercontent.com/u/98681?v=3&s=460)"></a>'
-				// html += '</ span>'
-				// html += '</div>'
-				// html += '<h4 class="left-align"><a href="#">Mark Otto</a></h4>'
-				// html += 'Mark Otto is a designer living and working in San Francisco. Originally from Wisconsin. At Twitter, He also created the popular open source front-end toolkit Bootstrap with @fat.'		
-				// html += '</div>'
-				// html += '<ul class="hover-card-content left-align">'
-				// html += '<li class="right-aligned">'
-				// html += '<span class="desc">Favorites</span><span class="content">60,56</span>'
-			// html += '</li>'
-			// html += '<li class="right-aligned">'
-				// html += '<span class="desc">Followers</span><span class="content">40.9k</span>'
-			// html += '</li>'
-			// html += '<li class="right-aligned">'
-				// html += '<span class="desc">Following</span>'
-				// html += '<span class="content">'
-				// html += '<a href="" data-toggle="tooltip">101</a>'
-				// html += '</span>'
-			// html += '</li>'
-			// html += '<li class="right-aligned">'
-				// html += '<span class="desc">Tweets</span>'
-				// html += '<span class="content"><a href="#">24k</a></span>'
-			// html += '</li>'
-		// html += '</ul>'
-	// html += '</div> '
-	// html += '<span class="hover-card-options-wrapper">'
-		// html += '<span class="hover-card-options">'
-			// html += '<ul>'
-				// html += '<li><a data-toggle="modal" data-backdrop="true" data-keyboard="true" href="https://twitter.com/mdo"><i class="glyphicon glyphicon-envelope"></i>@mdo</a></li>'
-			// html += '</ul>'
-		// html += '</span>'
-	// html += '</span>'
-// html += '</div>'
-// 			
-	// $('.basic-hovercard').popover({ 
-		// html : true,
-		// trigger: 'manual',
-		// placement: function (context, source) {
-			// return "bottom";
-		// },
-		// content: function() {
-			// return $('.basic-content').html();   
-		// }
-	// }).on("click", function(e) {
-		// e.preventDefault();
-	// }).on("mouseenter", function() {
-		// var _this = this;
-		// $(this).popover("show");
-		// $(this).siblings(".popover").on("mouseleave", function() {
-			// $(_this).popover('hide');
-		// });
-	// }).on("mouseleave", function() {
-		// var _this = this;
-		// setTimeout(function() {
-			// if (!$(".popover:hover").length) {
-				// $(_this).popover("hide")
-			// }
-		// }, 100);
-	// });
-		
 
 				return html;
-			})
+			}).on("mouseover", function(d) {
+				//make the html
+				html = "<div class='row'>"
+				html += "<div class='col-xs-6'>"
+				html += "<img class='captain-thumb img-rounded hover-img col-xs-12' src='" + d.imgSrc + "'>"
+				html += "</div><div class='col-xs-6'>"
+				html += "<h5>" + d.shipName + "</h5>"
+				html += "<h6>" + d.shipType + "</h5>"
+				html += "<i>" + d.captainRank + " " + d.captainName + "<i>"
+				html += "<p>Nationality: " + d.nationality + "</p>"
+				html += "<p>Voyage Started: " + d.voyageStart.toLocaleString() + "</p>"
+				html += "<p>Sailing From: " + d.fromPlace + "</p>"
+				html += "<p>Sailing To: " + d.toPlace + "</p>"
+				html += "<p>Days at sea: " + d.voyageDaysSinceStart + "</p>"
+				if (d.captainName2){
+					html += "<p>Second Observer: " + d.captainRank2 + " " + d.captainName2 + "</p>"
+				}
+				html += "</div>"
+				
+				
+				
+				//positioning
+				pos = $(this).position();
+				divPos = pos.top + ($(this).height() / 2)
+				
+				d3.select(this).style('background-color','#cccccc')	 //highlight
+					
+	            globals.memoTooltip.transition()		
+	                .duration(200)		
+	                .style("opacity", .9);		
+	            globals.memoTooltip.html(html)	
+	                .style("right", "280px")		
+	                .style("top", divPos + "px");	
+            })					
+        .on("mouseout", function(d) {	
+        	d3.select(this).style('background-color','white')		
+            globals.memoTooltip.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
 			
 }
+
+
 
 //lookup functions
 function lookupCaptainInfo(captainName){

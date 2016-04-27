@@ -55,8 +55,8 @@ html, body{
 	top: 0px;
 	width: 300px;
 	height: 100%!important;
-	max-height: 100%!important;
-	min-height: 100%!important;
+	max-height: 50%!important;
+	min-height: 50%!important;
 	background-color: rgba(255, 255, 255, 0.5)
 }
 .log-entry{
@@ -64,7 +64,7 @@ html, body{
 }
 .log{
 	width: 100%;
-	cursor:hand;
+	cursor:default;
 }
 .captain-thumb{
 	margin: 0px;
@@ -99,4 +99,19 @@ html, body{
 	height: 10px;
 	width: 250px;
 	margin-left: 25px;
+}
+div.tooltip {	
+	text-align: right;
+    position: absolute;				
+    width: 350px;					
+    height: 250px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: white;	
+    border: 0px;		
+    border-radius: 8px;	
+    border-width: 1;
+    border-color: black;		
+    pointer-events: none;			
+    z-index: 1000;
 }

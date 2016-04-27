@@ -2,23 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fcf822a2-70a0-4a13-ab1c-a1f19755aba7" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/ship_metadata.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/british_memos_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/british_points_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/dutch_memos_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/dutch_points_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/french_memos_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/french_points_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/ship_metadata.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/spanish_memos_updated.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/main/assets/data/updated_data/spanish_points_updated.csv" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/british_points_updated.csv" afterPath="$PROJECT_DIR$/main/assets/data/british_points_updated.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/dutch_points_updated.csv" afterPath="$PROJECT_DIR$/main/assets/data/dutch_points_updated.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/french_points_updated.csv" afterPath="$PROJECT_DIR$/main/assets/data/french_points_updated.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/index.html" afterPath="$PROJECT_DIR$/main/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/js/main.js" afterPath="$PROJECT_DIR$/main/assets/js/main.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Python/makeData.py" afterPath="$PROJECT_DIR$/Python/makeData.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/ship_lookup.csv" afterPath="$PROJECT_DIR$/main/assets/data/ship_lookup.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main/assets/data/spanish_points_updated.csv" afterPath="$PROJECT_DIR$/main/assets/data/spanish_points_updated.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -47,8 +35,8 @@
       <file leaf-file-name="makeData.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Python/makeData.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6904762" vertical-offset="2097" max-vertical-offset="8940">
-              <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.36309522" vertical-offset="4407" max-vertical-offset="8940">
+              <caret line="306" column="37" selection-start-line="306" selection-start-column="37" selection-end-line="306" selection-end-column="37" />
               <folding />
             </state>
           </provider>
@@ -313,7 +301,7 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39976552" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32942554" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32942554" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -453,8 +441,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Python/makeData.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6904762" vertical-offset="2097" max-vertical-offset="8940">
-          <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.36309522" vertical-offset="4407" max-vertical-offset="8940">
+          <caret line="306" column="37" selection-start-line="306" selection-start-column="37" selection-end-line="306" selection-end-column="37" />
           <folding />
         </state>
       </provider>

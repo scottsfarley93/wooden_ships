@@ -304,13 +304,13 @@ for row in reader:
             longitude = float(row['Lon3'])
         except:
             continue
-        snow = bool(row['Snow'])
-        gusts = bool(row['Gusts'])
-        thunder = bool(row['Thunder'])
-        fog = bool(row['Fog'])
-        hail = bool(row['Hail'])
-        seaIce = bool(row['SeaIce'])
-        rain = bool(row['Rain'])
+        snow = bool(int(row['Snow']))
+        gusts = bool(int(row['Gusts']))
+        thunder = bool(int(row['Thunder']))
+        fog = bool(int(row['Fog']))
+        hail = bool(int(row['Hail']))
+        seaIce = bool(int(row['SeaIce']))
+        rain = bool(int(row['Rain']))
 
         if row['ProbTair'] != '' and row['ProbTair'] != 'NA':
             airTemp = row['ProbTair']
