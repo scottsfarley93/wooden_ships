@@ -75,11 +75,12 @@ d3.selection.prototype.moveToBack = function() {
 };
 
 
+setMap(); //creates the map --> ASAP
 
 $(document).ready(function(){
 	//stuff that happens as the map is created.
-	setMap(); //creates the map
 	loadCaptainMetadata() //loads images and datas about the captains
+	loadWikiData() //loads data about the ships
 	getPorts();//get the port cities and display them
 	changeCountry("British")
 	loadShipLookup() // get metadata about ships and voyages and captains
@@ -571,6 +572,7 @@ function displayMemos(memoSet){
 				d['shipType'] = shipType
 				d['nationality'] = nationality
 				d['voyageStart'] = voyageStart
+				d['company'] = meta['company']
 				d['voyageDaysSinceStart'] = daysSinceStart
 
 				if (!captain || captain ==""){
@@ -607,12 +609,23 @@ function displayMemos(memoSet){
 				html += "<p>Sailing From: " + d.fromPlace + "</p>"
 				html += "<p>Sailing To: " + d.toPlace + "</p>"
 				html += "<p>Days at sea: " + d.voyageDaysSinceStart + "</p>"
+				html += "<p>Sailing for: " + d.company + "</p>"
 				if (d.captainName2){
 					html += "<p>Second Observer: " + d.captainRank2 + " " + d.captainName2 + "</p>"
 				}
 				html += "</div>"
 				
-				
+				//try to lookup from wikipedia
+				if (d.company == "RN"){
+					shipWiki = _.where(globals.data.rn_wiki, {
+						ShipName: d.shipName.toUpperCase()
+					})
+					console.log(shipWiki)
+					for (item in shipWiki){
+						html += "<p>" + shipWiki[item].Text + "</p>"
+					}
+				}
+
 				
 				//positioning
 				pos = $(this).position();
@@ -628,8 +641,8 @@ function displayMemos(memoSet){
 	                .style("top", divPos + "px");	
             })					
         .on("mouseout", function(d) {	
-        	d3.select(this).style('background-color','white')		
-            globals.memoTooltip.transition()		
+        	d3.select(this).style('background-color','white')	//de highlight	
+            globals.memoTooltip.transition()		 //remove
                 .duration(500)		
                 .style("opacity", 0);	
         });
@@ -840,6 +853,13 @@ function displaySummary(props){
 	html += "<li class='list-group-item'>Mean Wind Speed (m/s): " + round2(props['meanWindSpeed']) + "<span class='text-muted'>(" + (props['numWindSpeed'])  + " obs.)</li>"
 	html += "<li class='list-group-item'>Mean Wind Direction (deg): " + round2(props['meanWindDirection']) + "<span class='text-muted'>(" + (props['numWindDirection'])  + " obs.)</li>"
 	$("#weatherSummaryList").append(html)
+}
+
+function loadWikiData(){
+	d3.csv("assets/data/rn_ship_wikipedia.csv", function(data){
+		globals.data.rn_wiki = data
+		console.log("Loaded royal navy wiki.")
+	})
 }
 
 
