@@ -5,7 +5,7 @@ var attrArray = ["countries_1715", "countries_1783", "countries_1815"];
 
 var expressed = attrArray[0]
 
-var attrProj = ["Azimuthal", "Cylindrical", "sat"]; // list of projections
+var attrProj = ["Azimuthal", "Cylindrical", "Orthographic"]; // list of projections
 
 globals = {}
 globals.basemap = {}
@@ -164,8 +164,8 @@ function projDropdown(attrProj){
             	changeProjection("Cylindrical")
             }else if (this.value == "Azimuthal"){
             	changeProjection("Azimuthal");
-            }else if(this.value == "sat"){
-            	changeProjection("sat")
+            }else if(this.value == "Orthographic"){
+            	changeProjection("Orthographic")
             }
         });
 
@@ -202,9 +202,13 @@ function changeProjection(projection, scale, center){
 		   //  .clipAngle(90)
 		   //  .precision(.1);
 
-		var projection = d3.geo.azimuthalEqualArea()
-		    .clipAngle(180 - 1e-3)
-		    .scale(140)
+		// var projection = d3.geo.azimuthalEqualArea()
+		//     .clipAngle(180 - 1e-3)
+		//     .scale(140)
+		//     .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+		//     .precision(.1);
+		var projection = d3.geo.robinson()
+		    .scale(150)
 		    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
 		    .precision(.1);
 
@@ -224,14 +228,11 @@ function changeProjection(projection, scale, center){
 		    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
 		    .precision(.1);
 
-    }else if (projection == "sat"){
-		var projection = d3.geo.satellite()
-		    .distance(1.1)
-		    .scale(5500)
-		    .rotate([76.00, -34.50, 32.12])
-		    .center([-120, 37])
-		    .tilt(25)
-		    .clipAngle(Math.acos(1 / 1.1) * 180 / Math.PI - 1e-6)
+    }else if (projection == "Orthographic"){
+	var projection = d3.geo.orthographic()
+		    .scale(350)
+		    .translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
+		    .clipAngle(90)
 		    .precision(.1);
     }
    var path = d3.geo.path()
