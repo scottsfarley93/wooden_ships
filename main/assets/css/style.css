@@ -4,6 +4,13 @@
     stroke-width: 0px;
 }
 
+.graticule {
+  fill: none;
+  stroke: white;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
 .mapContainer{
 	fill: black;
 }

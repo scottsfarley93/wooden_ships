@@ -5,7 +5,7 @@ var attrArray = ["countries_1715", "countries_1783", "countries_1815"];
 
 var expressed = attrArray[0]
 
-var attrProj = ["VDG", "Mercator", "sat"]; // list of projections
+var attrProj = ["Azimuthal", "Cylindrical", "sat"]; // list of projections
 
 globals = {}
 globals.basemap = {}
@@ -86,9 +86,12 @@ function setMap(){
 	            .attr("class", "land");
 	            //.style("stroke", "black").style("fill", "blue"); 
 
+			var graticule = d3.geo.graticule();
+
+
 	        console.log(globals.land)
 	         
-	         changeProjection("VDG");
+	         changeProjection("Azimuthal");
 	      
 	    	
 	}; //end of callback
@@ -157,10 +160,10 @@ function projDropdown(attrProj){
         .append("select")
         .attr("class", "dropdownProjections")
         .on("change", function(){
-            if (this.value == "Mercator"){
-            	changeProjection("mercator")
-            }else if (this.value == "VDG"){
-            	changeProjection("VDG");
+            if (this.value == "Cylindrical"){
+            	changeProjection("Cylindrical")
+            }else if (this.value == "Azimuthal"){
+            	changeProjection("Azimuthal");
             }else if(this.value == "sat"){
             	changeProjection("sat")
             }
@@ -187,23 +190,39 @@ function projDropdown(attrProj){
 //dropdown change listener handler
 function changeProjection(projection, scale, center){
     //decide what projection to change to
-    if (projection == "VDG") {
+    if (projection == "Azimuthal") {
     	// var projection = d3.geo.vanDerGrinten4()
     	// 	.scale(125)
    	 // 		.translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
     	// 	.precision(.1);
+
+    	// var projection = d3.geo.orthographic()
+		   //  .scale(350)
+		   //  .translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
+		   //  .clipAngle(90)
+		   //  .precision(.1);
 
 		var projection = d3.geo.azimuthalEqualArea()
 		    .clipAngle(180 - 1e-3)
 		    .scale(140)
 		    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
 		    .precision(.1);
+
+		// var projection = d3.geo.cylindricalEqualArea()
+		//     .scale(200)
+		//     .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+		//     .precision(.1);
     }
-    else if (projection == "mercator"){
-    	var projection = d3.geo.mercator()
-    		.scale((globals.map.dimensions.width + 1) / 2 / Math.PI)
-    		.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
-    		.precision(.1);
+    else if (projection == "Cylindrical"){
+    	// var projection = d3.geo.mercator()
+    	// 	.scale((globals.map.dimensions.width + 1) / 2 / Math.PI)
+    	// 	.translate([globals.map.dimensions.width  / 2, globals.map.dimensions.height / 2])
+    	// 	.precision(.1);
+
+    	var projection = d3.geo.cylindricalEqualArea()
+		    .scale(200)
+		    .translate([globals.map.dimensions.width / 2, globals.map.dimensions.height / 2])
+		    .precision(.1);
 
     }else if (projection == "sat"){
 		var projection = d3.geo.satellite()
@@ -477,7 +496,7 @@ function styleHexbins(ships, attr){
 			.attr("fill", function(d){
 				return hexColor(d3.mean(d, function(d){
 					return +d.pressure;
-					
+
 				}))
 			});
 
